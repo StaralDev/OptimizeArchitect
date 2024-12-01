@@ -1,0 +1,1 @@
+{"name":"OptimizeArchitect","className":"DataModel","filePaths":["default.project.json"],"children":[{"name":"ServerScriptService","className":"ServerScriptService","children":[{"name":"OptimizeArchitect","className":"Folder","children":[{"name":"Source","className":"Script","filePaths":["src\\plugin\\Source.server.luau"]}]}]}]}

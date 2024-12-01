@@ -1,0 +1,12 @@
+{
+  "name": "OptimizeArchitect",
+  "tree": {
+    "$className": "DataModel",
+
+    "ServerScriptService": {
+      "OptimizeArchitect": {
+        "$path": "src/plugin"
+      }
+    }
+  }
+}
