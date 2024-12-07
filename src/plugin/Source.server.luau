@@ -89,7 +89,7 @@ local function ReloadLanguage()
     LocalText.Language = Language
 
     oaWidget.Title = LocalText.GetLocalText("MenuTitle")
-    BottomBar.Title.Text = LocalText.GetLocalText("PluginName")
+    BottomBar.Title.Text = LocalText.GetLocalText("PluginName").." "..version
 
     for _, v in MenuButtons do
         v.Button.Text = LocalText.GetLocalText(v.Menu.MenuNameKey)
