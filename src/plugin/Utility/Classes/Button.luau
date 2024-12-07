@@ -5,7 +5,7 @@ Button.__index = Button
 
 local ColorTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
 
-local function ChangeButtonColor(Object : TextButton, Color : Color3) : Tween
+local function ChangeButtonColor(Object : GuiButton, Color : Color3) : Tween
     local builtTween = TweenService:Create(Object, ColorTweenInfo, {BackgroundColor3 = Color})
     builtTween:Play()
     
@@ -25,7 +25,7 @@ type Button = typeof(setmetatable({} :: {
 --[[
     Properties
 ]]    
-    ClickableButton : TextButton,
+    ClickableButton : GuiButton,
     Enabled : boolean,
 
     BaseColor : Color3?,
@@ -46,7 +46,7 @@ type Button = typeof(setmetatable({} :: {
 
 }, Button))
 
-function Button.new(ClickableButton : TextButton, StartEnabled : boolean) : Button
+function Button.new(ClickableButton : GuiButton, StartEnabled : boolean) : Button
     
     local self : Button = setmetatable({
         ClickableButton = ClickableButton,

@@ -2,6 +2,7 @@
     This script controls the main behavior of the plugin
 
     Most of the other behavior is controlled in each tool's module
+    If you want to make a tool go read "src\plugin\Menus\TestMenu.luau" and "src\plugin\Utility\Classes\Menu.luau"
 ]]
 
 type MenuButtonPair = {
@@ -24,6 +25,7 @@ local version = "V0.1 β"
 local OALanguage = require(Utility.OALanguage)
 local LocalText = require(Utility.LocalText)
 
+local Button = require(Utility.Classes.Button)
 local FlipToggle = require(Utility.Classes.FlipToggle)
 
 local toolbar = plugin:CreateToolbar("Optimize Architect")
@@ -63,7 +65,7 @@ local function SetupButtons()
     MenuButtons = table.create(0)
 
     for _, v in MainFrame.SidebarHolder.SidebarFrame:GetChildren() do
-        if (v:IsA("UIPadding")) then continue end
+        if not (v:IsA("GuiButton")) then continue end
         v:Destroy()
     end
 
@@ -77,9 +79,13 @@ local function SetupButtons()
         newButton.Parent = MainFrame.SidebarHolder.SidebarFrame
         newButton.Text = LocalText.GetLocalText(currentMenu.MenuNameKey)
 
-        newButton.MouseButton1Click:Connect(function()
+        local buttonObject = Button.new(newButton, true)
+        buttonObject:SetColors(Color3.fromRGB(53, 59, 72), Color3.fromRGB(37, 41, 50), Color3.fromRGB(109, 115, 129), Color3.fromRGB(72, 72, 72))
+        
+        function buttonObject.OnClicked()
             RunFunctionSafe(currentMenu.OnCreation)
-        end)
+            RunFunctionSafe(currentMenu.OnLanguageReload)
+        end
 
         table.insert(MenuButtons, {Menu = currentMenu, Button = newButton} :: MenuButtonPair)
     end

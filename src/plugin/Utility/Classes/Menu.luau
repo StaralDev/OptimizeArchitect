@@ -1,29 +1,30 @@
-export type Menu<T> = {
+export type Menu<T> = typeof(setmetatable({} :: {
     MenuNameKey : string,
     Enabled : boolean,
     MenuGui : T,
 
-    OnCreation : () -> ()?,
-    OnDeletion : () -> ()?,
+    OnCreation : (MenuGui : T) -> ()?,
+    OnDeletion : (MenuGui : T) -> ()?,
 
-    OnTick : (DeltaTime : number) -> ()?,
+    OnTick : (MenuGui : T, DeltaTime : number) -> ()?,
 
     OnLanguageReload : (
+        MenuGui : T,
         LocalText : {
             Language : number,
             GetLocalText : (key : string) -> (string)
         }
     ) -> ()?
-}
+}, {__index = {} :: any}))
 
 local Menu = {}
 
-Menu.new = function<T>(menuNameKey : string, enabled : boolean, menuGui : T)
-    local self : Menu<T> = {
+Menu.new = function<T>(menuNameKey : string, enabled : boolean, menuGui : T, this : any)
+    local self : Menu<T> = setmetatable({
         MenuNameKey = menuNameKey,
         Enabled = enabled,
         MenuGui = menuGui
-    }
+    }, {__index = this})
 
     return self
 end
