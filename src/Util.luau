@@ -1,6 +1,5 @@
 local TweenService = game:GetService("TweenService")
 local Types = require(script.Parent.Types)
-local Fusion = require(script.Parent.Packages.Fusion)
 
 --[=[
     Tweens a GuiButton. Used in components for automated button transitions when
@@ -21,6 +20,12 @@ local function TweenButton(Button: GuiButton, Transition: Types.TransitionOverri
 
     tween:Play()
     return tween
+end
+
+local function GetStatistics(Selection: {Instance})
+    for _, v in Selection do
+        
+    end
 end
 
 return {

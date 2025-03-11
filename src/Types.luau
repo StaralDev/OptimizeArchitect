@@ -31,4 +31,29 @@ export type TransitionOverride = {
 
 export type Cleanup = { RBXScriptConnection }
 
+export type Statistics<T> = {
+    Instances: T,
+
+    Beams: T,
+    BeamSegments: T,
+
+    Constraints: T,
+    Attachments: T,
+
+    ParticleEmitters: T,
+    EnabledEmitters: T,
+
+    ParticlesOnAverage: T,
+    ParticleMass: T
+}
+
+export type StatisticData = {
+    Warning: number?,
+    Dangerous: number?,
+    Cataclysmic: number?,
+    DisplayName: string,
+    
+    UseMeter: boolean?
+}
+
 return nil
