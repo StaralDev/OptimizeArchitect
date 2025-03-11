@@ -33,12 +33,16 @@ export type Cleanup = { RBXScriptConnection }
 
 export type Statistics<T> = {
     Instances: T,
+    Parts: T,
 
     Beams: T,
+    EnabledBeams: T,
     BeamSegments: T,
 
     Constraints: T,
     Attachments: T,
+
+    Motors: T,
 
     ParticleEmitters: T,
     EnabledEmitters: T,
@@ -48,11 +52,13 @@ export type Statistics<T> = {
 }
 
 export type StatisticData = {
-    Warning: number?,
+    High: number?,
     Dangerous: number?,
     Cataclysmic: number?,
+    Max: number?,
     DisplayName: string,
-    
+    ShortName: string?,
+
     UseMeter: boolean?
 }
 

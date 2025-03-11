@@ -11,6 +11,7 @@ type ToolConfig = {
     -- Required
     Enabled: boolean,
     Title: string,
+    Description: string,
 
     -- Methods
     OnPluginLoaded: (self: Tool) -> ()?,
