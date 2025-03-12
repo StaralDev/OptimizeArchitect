@@ -1,4 +1,5 @@
 local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
 
 local Config = require(script.Parent.Parent.Config)
 local Tool = require(script.Parent.Tool)
@@ -92,6 +93,13 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
     local SidebarOpened = MenuScope:Value(true)
 
     local splashColor = Util.ModifyHSV(Config.Colors.Background, 0, 0, -0.05)
+
+    local UpdateLog = HttpService:GetAsync()
+
+    local warningBox: Frame = MenuScope:New "Frame" {
+        Position = UDim2.new(0, 0, 0, 0),
+        Size = UDim2.new(1, 0, 0, 48)
+    }
 
     local SplashText: TextLabel = MenuScope:New "TextLabel" {
         Font = Enum.Font.JosefinSans,

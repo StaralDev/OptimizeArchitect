@@ -7,7 +7,9 @@ Config.Architect = {
     Identifier = "OptimizedArchitect",
     Title = "θptimized Architect",
     Tooltip = "Activate Optimized Architect",
-    ButtonName = "Open"
+    ButtonName = "Open",
+    RepositoryUrl = "https://github.com/StaralDev/OptimizeArchitect",
+    UpdateLogUrl = "/UpdateLog.json"
 }
 
 Config.Colors = {
