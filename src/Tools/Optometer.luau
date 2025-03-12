@@ -62,6 +62,16 @@ local OptometerData: Types.Statistics<Types.StatisticData> = {
         UseMeter = false
     },
 
+    Trails = {
+        DisplayName = "Trails",
+        UseMeter = false
+    },
+
+    EnabledTrails = {
+        DisplayName = "EnabledTrails",
+        UseMeter = false
+    },
+
     ParticleEmitters = {
         DisplayName = "ParticleEmitters",
         UseMeter = false
@@ -83,10 +93,10 @@ local OptometerData: Types.Statistics<Types.StatisticData> = {
         UseMeter = true
     },
 
-    ParticleMass = {
+    ParticlesPerSecond = {
         Max = 10000,
-        DisplayName = "Particle Mass",
-        UseMeter = true
+        DisplayName = "Particles Per Second",
+        UseMeter = false
     }
 }
 

@@ -52,11 +52,14 @@ export type Statistics<T> = {
 
     Motors: T,
 
+    Trails: T,
+    EnabledTrails: T,
+
     ParticleEmitters: T,
     EnabledEmitters: T,
 
     ParticlesOnAverage: T,
-    ParticleMass: T
+    ParticlesPerSecond: T
 }
 
 export type StatisticData = {

@@ -36,14 +36,75 @@ local function AutoGenerateColors(Base: Color3): Types.InteractColorOverride
     }
 end
 
+local function GetParticlesAverage(Emitter: ParticleEmitter): number
+    return Emitter.Rate * ((Emitter.Lifetime.Min + Emitter.Lifetime.Max)/2)
+end
+
+local function GetParticlesSecond(Emitter: ParticleEmitter): number
+    return Emitter.Rate * Emitter.TimeScale
+end
+
 local function GetStatistics(Selection: {Instance})
+    local collection: Types.Statistics<number> = {
+        Instances = 0,
+        Parts = 0,
+        Beams = 0,
+        EnabledBeams = 0,
+        BeamSegments = 0,
+        Constraints = 0,
+        Attachments = 0,
+        Motors = 0,
+        Trails = 0,
+        EnabledTrails = 0,
+        ParticleEmitters = 0,
+        EnabledEmitters = 0,
+        ParticlesOnAverage = 0,
+        ParticlesPerSecond = 0
+    }
+    local counted: {Instance} = {}
+
     for _, v in Selection do
         
+        if (table.find(counted, v)) then continue end
+        table.insert(counted, v)
+        
+        collection.Instances += 1
+
+        if (v:IsA("BasePart")) then
+            collection.Parts += 1
+        elseif (v:IsA("Beam")) then
+            collection.Beams += 1
+
+            if (v.Enabled) then
+                collection.EnabledBeams += 1
+                collection.BeamSegments += v.Segments
+            end
+
+        elseif (v:IsA("Constraint")) then
+            collection.Constraints += 1
+        elseif (v:IsA("Motor6D")) then
+            collection.Motors += 1
+        elseif (v:IsA("ParticleEmitter")) then
+            collection.ParticleEmitters += 1
+
+            if (v.Enabled) then
+                collection.EnabledEmitters += 1
+                collection.ParticlesOnAverage += GetParticlesAverage(v)
+                collection.ParticlesPerSecond += GetParticlesSecond(v)
+            end
+        elseif (v:IsA("Trail")) then
+            collection.Trails += 1
+
+            if (v.Enabled) then
+                collection.EnabledTrails += 1
+            end
+        end
     end
 end
 
 return {
     ["TweenButton"] = TweenButton,
     ["AutoGenerateColors"] = AutoGenerateColors,
-    ["ModifyHSV"] = ModifyHSV
+    ["ModifyHSV"] = ModifyHSV,
+    ["GetStatistics"] = GetStatistics
 }
