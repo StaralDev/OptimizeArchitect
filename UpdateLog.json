@@ -2,6 +2,6 @@
     {
         "Name": "0.0.1 Beta",
         "Version": 0.01,
-        "Description": "The plugin's base form before anything has been added."
+        "Description": "This is a test for the Update Log system. This should be pulling in information from a JSON file in the repo."
     }
 ]

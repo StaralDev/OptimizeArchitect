@@ -31,6 +31,14 @@ export type TransitionOverride = {
 
 export type Cleanup = { RBXScriptConnection }
 
+export type UpdateData = {
+    Name: string,
+    Version: number,
+    Description: string
+}
+
+export type UpdateLog = {UpdateData}
+
 export type Statistics<T> = {
     Instances: T,
     Parts: T,

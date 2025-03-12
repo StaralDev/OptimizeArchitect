@@ -9,14 +9,18 @@ Config.Architect = {
     Tooltip = "Activate Optimized Architect",
     ButtonName = "Open",
     RepositoryUrl = "https://github.com/StaralDev/OptimizeArchitect",
-    UpdateLogUrl = "/UpdateLog.json"
+    RawRepositoryUrl = "https://raw.githubusercontent.com/StaralDev/OptimizeArchitect",
+    UpdateLogUrl = "/master/UpdateLog.json",
+
+    CurrentVersion = 0.00
 }
 
 Config.Colors = {
     Background = Color3.new(0.145098, 0.164706, 0.227451),
     ScrollBar = Color3.new(0.109804, 0.125490, 0.168627),
     Sidebar = Color3.new(0.160784, 0.180392, 0.254902),
-    Holder = Color3.new(0.168627, 0.192157, 0.266667)
+    Holder = Color3.new(0.168627, 0.192157, 0.266667),
+    UpdateWarning = Color3.new(0.098039, 0.113725, 0.168627)
 }
 
 Config.Menu = {

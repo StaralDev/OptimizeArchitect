@@ -1,9 +1,11 @@
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
+local TweenService = game:GetService("TweenService")
 
 local Config = require(script.Parent.Parent.Config)
 local Tool = require(script.Parent.Tool)
 local Util = require(script.Parent.Parent.Util)
+local Types = require(script.Parent.Parent.Types)
 
 local MenuScope = require(script.Parent.GetMenuScope)()
 local CurrentTool: Tool.Tool? = nil
@@ -93,13 +95,6 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
     local SidebarOpened = MenuScope:Value(true)
 
     local splashColor = Util.ModifyHSV(Config.Colors.Background, 0, 0, -0.05)
-
-    local UpdateLog = HttpService:GetAsync()
-
-    local warningBox: Frame = MenuScope:New "Frame" {
-        Position = UDim2.new(0, 0, 0, 0),
-        Size = UDim2.new(1, 0, 0, 48)
-    }
 
     local SplashText: TextLabel = MenuScope:New "TextLabel" {
         Font = Enum.Font.JosefinSans,
@@ -267,6 +262,108 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
 
     widget:BindToClose(function()
         Runloop:Disconnect()
+    end)
+
+    local UpdateLog
+    local retries = 0
+
+    task.spawn(function()
+        local success, errorcode = pcall(function()
+            UpdateLog = HttpService:GetAsync(Config.Architect.RawRepositoryUrl..Config.Architect.UpdateLogUrl, true)
+        end)
+
+        if (not success) then
+            warn("Optimize Architect failed to load the Update Log. This could be a problem with your internet connection.")
+            warn("Error code:", errorcode)
+        end
+    end)
+
+    task.spawn(function()
+        
+        repeat 
+            task.wait() 
+            retries += 1 
+        until 
+            (UpdateLog) or (retries > 500)
+
+        if (not UpdateLog) then return end
+        local updateData: Types.UpdateLog = HttpService:JSONDecode(UpdateLog)
+        if (not updateData) then return end
+        local recentUpdate = updateData[#updateData]
+        if (not recentUpdate) then return end
+
+        local recentVersion = recentUpdate.Version
+        local currentVersion = Config.Architect.CurrentVersion
+
+        if (recentVersion > currentVersion) then
+
+            local warningLabel: TextLabel = MenuScope:New "TextLabel" {
+                Size = UDim2.new(1, -49, 0.25, 0),
+                BackgroundTransparency = 1,
+                TextColor3 = Color3.new(1, 1, 1),
+                Font = Enum.Font.JosefinSans,
+                Text = "UPDATE AVAILABLE: "..recentUpdate.Name,
+                TextScaled = true,
+                TextXAlignment = Enum.TextXAlignment.Left,
+                ZIndex = 10001
+            }
+
+            warningLabel.FontFace.Bold = true
+            local warningBox: Frame
+
+            warningBox = MenuScope:New "Frame" {
+                Position = UDim2.new(0, 0, 0, -70),
+                Size = UDim2.new(1, 0, 0, 60),
+                ZIndex = 10000,
+                BackgroundColor3 = Config.Colors.UpdateWarning,
+
+                [Children] = {
+                    MenuScope:New "UICorner" {
+                        CornerRadius = Config.Menu.CornerRadius
+                    },
+                    warningLabel,
+                    MenuScope:New "UIPadding" {
+                        PaddingBottom = UDim.new(0, 4),
+                        PaddingLeft = UDim.new(0, 4),
+                        PaddingRight = UDim.new(0, 4),
+                        PaddingTop = UDim.new(0, 8)
+                    },
+                    MenuScope:New "TextLabel" {
+                        Position = UDim2.new(0, 0, 0.25, 4),
+                        Size = UDim2.new(1, 0, 0.8, -4),
+                        TextColor3 = Color3.new(0.8, 0.84, 0.9),
+                        Font = Enum.Font.JosefinSans,
+                        TextScaled = true,
+                        ZIndex = 10001,
+                        BackgroundTransparency = 1,
+                        Text = recentUpdate.Description,
+                        TextXAlignment = Enum.TextXAlignment.Left,
+                        TextYAlignment = Enum.TextYAlignment.Top
+                    },
+                    MenuScope:ConstructTextButton {} {
+                        Text = "Dismiss",
+                        Position = UDim2.new(1, 0, 0, 0),
+                        Size = UDim2.new(0, 45, 0.25, 0),
+                        TextScaled = true,
+                        ZIndex = 10001,
+                        AnchorPoint = Vector2.new(1, 0),
+                        
+                        [MenuScope.OnEvent("MouseButton1Click")] = function()
+                            warningBox:Destroy()
+                        end
+                    }
+                }
+            }
+
+            warningBox.Parent = MenuFrame
+
+            TweenService:Create(
+                warningBox, 
+                TweenInfo.new(1.5, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out), 
+                { Position = UDim2.new(0, 0, 0, 0) }
+            ):Play()
+        end
+
     end)
 end
 
