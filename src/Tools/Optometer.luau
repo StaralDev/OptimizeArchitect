@@ -97,10 +97,10 @@ local function GetOptometerButtons(self: Tool.Tool): { TextButton }
     -- Create the Miscellanous button first before the other ones
     local miscButton: TextButton = self.Scope:ConstructTextButton {
         Colors = {
-            BaseColor = Color3.new(0.305882, 0.368627, 0.572549),
-            HoveredColor = Color3.new(0.368627, 0.431373, 0.647059),
-            InteractedColor = Color3.new(0.262745, 0.321569, 0.494118),
-            DisabledColor = Color3.new(0.427451, 0.466667, 0.588235)
+            BaseColor = Color3.new(0.321569, 0.380392, 0.572549),
+            HoveredColor = Color3.new(0.384314, 0.447059, 0.647059),
+            InteractedColor = Color3.new(0.270588, 0.325490, 0.478431),
+            DisabledColor = Color3.new(0.458824, 0.494118, 0.600000)
         }
     } {
         Text = "Miscellaneous",

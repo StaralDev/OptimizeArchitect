@@ -2,9 +2,12 @@ local RunService = game:GetService("RunService")
 
 local Config = require(script.Parent.Parent.Config)
 local Tool = require(script.Parent.Tool)
+local Util = require(script.Parent.Parent.Util)
 
 local MenuScope = require(script.Parent.GetMenuScope)()
 local CurrentTool: Tool.Tool? = nil
+
+local SplashImage: ImageLabel
 
 local function GenerateTools(): { Tool.Tool }
     local tools: { Tool.Tool } = {}
@@ -30,6 +33,11 @@ local function GenerateButtons(tools: { Tool.Tool }): { TextButton }
         newButton = MenuScope:ConstructTextToggle { 
             Enabled = false,
             OnEnabled = function()
+
+                if (SplashImage) then
+                    SplashImage.Visible = false
+                end
+
                 for _, v in buttons do
                     if (v == newButton) then continue end
                     v:SetAttribute("Enabled", false)
@@ -53,6 +61,10 @@ local function GenerateButtons(tools: { Tool.Tool }): { TextButton }
             OnDisabled = function()
                 if not (CurrentTool) then return end
                 if (newButton.Text == CurrentTool.Title) then
+                    if (SplashImage) then
+                        SplashImage.Visible = true
+                    end
+
                     if (CurrentTool.Closed) then CurrentTool.Closed(CurrentTool) end
                     CurrentTool.Scope:doCleanup()
                     CurrentTool:RegenerateScope()
@@ -79,6 +91,33 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
     local Children = MenuScope.Children
     local SidebarOpened = MenuScope:Value(true)
 
+    local splashColor = Util.ModifyHSV(Config.Colors.Background, 0, 0, -0.05)
+
+    local SplashText: TextLabel = MenuScope:New "TextLabel" {
+        Font = Enum.Font.JosefinSans,
+        Size = UDim2.new(1, 0, 0, 24),
+        Position = UDim2.new(0, 0, 1, 0),
+        Text = "Optimize Architect by Staral",
+        TextColor3 = splashColor,
+        BackgroundTransparency = 1,
+        TextScaled = true
+    }
+
+    SplashImage = MenuScope:New "ImageLabel" {
+        Image = "http://www.roblox.com/asset/?id=128863203048866",
+        BackgroundTransparency = 1,
+        ImageTransparency = 0.4,
+        Size = UDim2.new(1, 0, 1, 0),
+        Position = UDim2.new(0.5, 0, 0.5, 0),
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        ImageColor3 = splashColor,
+        [Children] = {
+            MenuScope:New "UIAspectRatioConstraint" {},
+            SplashText
+        }
+    }
+
+    SplashText.FontFace.Bold = true
     
     -- The holder that contains the selected tool.
     local Holder: Frame = MenuScope:New "Frame" {
@@ -87,7 +126,8 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
         [Children] = {
             MenuScope:New "UICorner" {
                 CornerRadius = Config.Menu.CornerRadius
-            }
+            },
+            SplashImage
         },
         Size = UDim2.new(1, -Config.Menu.SidebarWidth-Config.Menu.ArrowPadding, 1, 0),
         AnchorPoint = Vector2.new(1, 0),
@@ -201,6 +241,8 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
             else 
                 0
         )
+
+        SplashText.Size = UDim2.new(0, Holder.AbsoluteSize.X - Config.Menu.ToolButtonPadding, 0, 24)
 
         Arrow.Size = UDim2.new(
             Arrow.Size.Width, 
