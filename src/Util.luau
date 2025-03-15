@@ -158,6 +158,12 @@ local function GetParticlesAverageEmit(Emitter: ParticleEmitter)
     return burstAmount + averageAmount
 end
 
+--[=[
+    Returns Statistics relevent to Optimization for a selection of Instances.
+
+    @param Selection the Instances to be checked.
+    @return A list of Statistics about the Instances.
+]=]
 local function GetStatistics(Selection: {Instance})
     local collection: Types.Statistics<number> = {
         Instances = 0,
@@ -209,6 +215,8 @@ local function GetStatistics(Selection: {Instance})
                 collection.ParticlesPerSecond += GetParticlesSecond(v)
             end
 
+            collection.ParticlesOnAveragePerEmit += GetParticlesAverageEmit(v)
+            collection.ParticlesPerEmit += GetParticlesEmit(v)
 
         elseif (v:IsA("Trail")) then
             collection.Trails += 1
