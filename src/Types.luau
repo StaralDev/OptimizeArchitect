@@ -77,4 +77,12 @@ export type StatisticData = {
     ShowHighestWarningAsMax: boolean?,
 }
 
+export type EmitVFXData = {
+    EmitCount: number,
+    EmitDelay: number,
+    EmitDuration: number,
+    EmitRepeatCount: number,
+    EmitRepeatDelay: number
+}
+
 return nil

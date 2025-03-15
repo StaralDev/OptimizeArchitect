@@ -178,7 +178,8 @@ local OptometerData: Types.Statistics<Types.StatisticData> = {
 }
 
 Config.Optometer = {
-    Data = OptometerData
+    Data = OptometerData,
+    MaxEmitRepeatCount = 10
 }
 
 return Config
