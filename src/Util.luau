@@ -59,7 +59,9 @@ local function GetStatistics(Selection: {Instance})
         ParticleEmitters = 0,
         EnabledEmitters = 0,
         ParticlesOnAverage = 0,
-        ParticlesPerSecond = 0
+        ParticlesOnAveragePerEmit = 0,
+        ParticlesPerSecond = 0,
+        ParticlesPerEmit = 0,
     }
     local counted: {Instance} = {}
 
@@ -92,6 +94,8 @@ local function GetStatistics(Selection: {Instance})
                 collection.ParticlesOnAverage += GetParticlesAverage(v)
                 collection.ParticlesPerSecond += GetParticlesSecond(v)
             end
+
+
         elseif (v:IsA("Trail")) then
             collection.Trails += 1
 

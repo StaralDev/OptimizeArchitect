@@ -61,4 +61,124 @@ Config.Components = {
     }
 }
 
+local OptometerData: Types.Statistics<Types.StatisticData> = {
+    Instances = {
+        High = 500,
+        Dangerous = 1000,
+        Cataclysmic = 2000,
+        Max = 2500,
+        ShowHighestWarningAsMax = true,
+
+        DisplayName = "Instances",
+        UseMeter = true
+    },
+
+    Parts = {
+        High = 150,
+        Dangerous = 300,
+        Cataclysmic = 1000,
+        Max = 1150,
+        ShowHighestWarningAsMax = true,
+
+        DisplayName = "Parts",
+        UseMeter = true,
+    },
+
+    Beams = {
+        DisplayName = "Beams",
+        UseMeter = false
+    },
+
+    EnabledBeams = {
+        DisplayName = "Enabled Beams",
+        UseMeter = false
+    },
+
+    BeamSegments = {
+        High = 2000,
+        Dangerous = 4000,
+        Cataclysmic = 8000,
+        Max = 8500,
+        ShowHighestWarningAsMax = true,
+
+        DisplayName = "Beam Segments",
+        UseMeter = true
+    },
+
+    Constraints = {
+        DisplayName = "Constraints",
+        UseMeter = false
+    },
+
+    Attachments = {
+        DisplayName = "Attachments",
+        UseMeter = false
+    },
+
+    Motors = {
+        DisplayName = "Motor6Ds",
+        UseMeter = false
+    },
+
+    Trails = {
+        DisplayName = "Trails",
+        UseMeter = false
+    },
+
+    EnabledTrails = {
+        DisplayName = "EnabledTrails",
+        UseMeter = false
+    },
+
+    ParticleEmitters = {
+        DisplayName = "ParticleEmitters",
+        UseMeter = false
+    },
+
+    EnabledEmitters = {
+        DisplayName = "Enabled ParticleEmitters",
+        UseMeter = false
+    },
+
+    ParticlesOnAverage = {
+        High = 4000,
+        Dangerous = 8000,
+        Cataclysmic = 16000,
+        Max = 16500,
+        ShowHighestWarningAsMax = true,
+
+        DisplayName = "Particles On Average",
+        ShortName = "Particles/Avg",
+        UseMeter = true
+    },
+
+    ParticlesOnAveragePerEmit = {
+        High = 2000,
+        Dangerous = 3000,
+        Cataclysmic = 6000,
+        Max = 8000,
+
+        DisplayName = "Particles On Average Per Emit",
+        ShortName = "Particles/Avg/Emit",
+        UseMeter = false
+    },
+
+    ParticlesPerSecond = {
+        Max = 10000,
+        UseMeter = false,
+        
+        DisplayName = "Particles Per Second",
+        ShortName = "Particles/Second"
+    },
+
+    ParticlesPerEmit = {
+        DisplayName = "Particles Per Emit",
+        UseMeter = true
+    }
+}
+
+Config.Optometer = {
+    Data = OptometerData
+}
+
 return Config

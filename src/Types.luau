@@ -59,7 +59,9 @@ export type Statistics<T> = {
     EnabledEmitters: T,
 
     ParticlesOnAverage: T,
-    ParticlesPerSecond: T
+    ParticlesPerSecond: T,
+    ParticlesPerEmit: T,
+    ParticlesOnAveragePerEmit: T
 }
 
 export type StatisticData = {
@@ -70,7 +72,9 @@ export type StatisticData = {
     DisplayName: string,
     ShortName: string?,
 
-    UseMeter: boolean?
+    UseMeter: boolean?,
+    
+    ShowHighestWarningAsMax: boolean?,
 }
 
 return nil
