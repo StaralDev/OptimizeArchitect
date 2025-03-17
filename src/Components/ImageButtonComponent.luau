@@ -12,6 +12,7 @@ local function new(
         BackgroundColors: Types.InteractColorOverride?,
         Transition: Types.TransitionOverride?,
         Enabled: boolean?,
+        DontChangeColor: boolean?,
         
         MouseUp: (MousePosition: Vector2) -> ()?,
         MouseDown: (MousePosition: Vector2) -> ()?,
@@ -30,6 +31,7 @@ local function new(
         [Scope.OnEvent("MouseEnter")] = function(MouseX: number, MouseY: number)
             if (properties.MouseEnter) then properties.MouseEnter(Vector2.new(MouseX, MouseY)) end
 
+            if (properties.DontChangeColor) then return end
             Util.TweenButton(
                 button, 
                 properties.Transition or Config.Components.DefaultTransition, 
@@ -48,6 +50,8 @@ local function new(
 
         [Scope.OnEvent("MouseLeave")] = function(MouseX: number, MouseY: number)
             if (properties.MouseLeave) then properties.MouseLeave(Vector2.new(MouseX, MouseY)) end
+
+            if (properties.DontChangeColor) then return end
 
             Util.TweenButton(
                 button, 
@@ -68,6 +72,8 @@ local function new(
         [Scope.OnEvent("MouseButton1Down")] = function(MouseX: number, MouseY: number)
             if (properties.MouseDown) then properties.MouseDown(Vector2.new(MouseX, MouseY)) end
 
+            if (properties.DontChangeColor) then return end
+
             Util.TweenButton(
                 button, 
                 properties.Transition or Config.Components.DefaultTransition,
@@ -86,6 +92,8 @@ local function new(
 
         [Scope.OnEvent("MouseButton1Up")] = function(MouseX: number, MouseY: number)
             if (properties.MouseUp) then properties.MouseUp(Vector2.new(MouseX, MouseY)) end
+
+            if (properties.DontChangeColor) then return end
 
             Util.TweenButton(
                 button, 
