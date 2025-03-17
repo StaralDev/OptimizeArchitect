@@ -160,7 +160,7 @@ local OptometerData: Types.Statistics<Types.StatisticData> = {
 
         DisplayName = "Particles On Average Per Emit",
         ShortName = "Particles/Avg/Emit",
-        UseMeter = false
+        UseMeter = true
     },
 
     ParticlesPerSecond = {
@@ -172,8 +172,8 @@ local OptometerData: Types.Statistics<Types.StatisticData> = {
     },
 
     ParticlesPerEmit = {
-        DisplayName = "Particles Per Emit",
-        UseMeter = true
+        DisplayName = "Particles/Emit",
+        UseMeter = false
     }
 }
 
