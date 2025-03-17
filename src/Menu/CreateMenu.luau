@@ -56,6 +56,7 @@ local function GenerateButtons(tools: { Tool.Tool }): { TextButton }
                     if (CurrentTool.Closed) then CurrentTool.Closed(CurrentTool) end
                     CurrentTool.Scope:doCleanup()
                     CurrentTool:RegenerateScope()
+                    CurrentTool = nil
                 end
 
                 CurrentTool = tool
@@ -71,6 +72,7 @@ local function GenerateButtons(tools: { Tool.Tool }): { TextButton }
                     if (CurrentTool.Closed) then CurrentTool.Closed(CurrentTool) end
                     CurrentTool.Scope:doCleanup()
                     CurrentTool:RegenerateScope()
+                    CurrentTool = nil
                 end
             end,
             ToggledColors = Config.Components.SelectedButtonColor,

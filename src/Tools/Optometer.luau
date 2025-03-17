@@ -6,11 +6,31 @@ local Config = require(script.Parent.Parent.Config)
 
 local Selection = game:GetService("Selection")
 
+local DeltaCounter = 0
+
 local OptometerData = Config.Optometer.Data
 
 local OptometerDial: ImageLabel
 local OptometerFrame: Frame
 local MeterLayoutFrame: Frame
+
+--[=[
+    Uses sin() multiplication to calculate how much
+    the dial should be shaken.
+
+    @param alpha The time that should be given to the function
+    @return The interpolated value of the function
+]=]
+local function CalculateDialShake(alpha): number
+    -- https://www.desmos.com/calculator/e1awij5xnf
+    return math.abs(
+        math.sin(5*alpha) 
+        * math.sin(0.8 * alpha)
+        * (3 * math.sin(1.3 * alpha))
+        * math.sin(8 * alpha)
+        * math.sin(20 * alpha)
+    )
+end
 
 local function GetOptometerButtons(self: Tool.Tool): { TextButton }
     local nonMeter: { Types.StatisticData } = {}
@@ -300,7 +320,12 @@ local Optometer = Tool.new {
     end,
 
     OnTick = function(self: Tool.Tool, deltaTime: number)
-        OptometerDial.Rotation += 70 * deltaTime
+        DeltaCounter += deltaTime
+
+        OptometerDial.Rotation = -3 * CalculateDialShake(DeltaCounter * 0.6)
+
+        print(OptometerDial.Rotation)
+
         OptometerFrame.Size = UDim2.new(0.6, 0, 0, MeterLayoutFrame.AbsoluteSize.Y - 38)
     end
 }
