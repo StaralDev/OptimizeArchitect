@@ -43,7 +43,7 @@ end
 ]=]
 local function ModifyHSV(Original: Color3, hueBoost: number, saturationBoost: number, valueBoost: number): Color3
     local h, s, v = Original:ToHSV()
-    return Color3.fromHSV((h+hueBoost)%1, math.clamp(s+saturationBoost, 0, 1), math.clamp(v, 0, 1))
+    return Color3.fromHSV((h+hueBoost)%1, math.clamp(s+saturationBoost, 0, 1), math.clamp(v+valueBoost, 0, 1))
 end
 
 --[=[

@@ -96,31 +96,18 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
 
     local splashColor = Util.ModifyHSV(Config.Colors.Background, 0, 0, -0.05)
 
-    local SplashText: TextLabel = MenuScope:New "TextLabel" {
-        Font = Enum.Font.JosefinSans,
-        Size = UDim2.new(1, 0, 0, 24),
-        Position = UDim2.new(0, 0, 1, 0),
-        Text = "Optimize Architect by Staral",
-        TextColor3 = splashColor,
-        BackgroundTransparency = 1,
-        TextScaled = true
-    }
-
     SplashImage = MenuScope:New "ImageLabel" {
         Image = "http://www.roblox.com/asset/?id=128863203048866",
         BackgroundTransparency = 1,
-        ImageTransparency = 0.4,
+        ImageTransparency = 0.75,
         Size = UDim2.new(1, 0, 1, 0),
         Position = UDim2.new(0.5, 0, 0.5, 0),
         AnchorPoint = Vector2.new(0.5, 0.5),
         ImageColor3 = splashColor,
         [Children] = {
             MenuScope:New "UIAspectRatioConstraint" {},
-            SplashText
         }
     }
-
-    SplashText.FontFace.Bold = true
     
     -- The holder that contains the selected tool.
     local Holder: Frame = MenuScope:New "Frame" {
@@ -165,7 +152,11 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
         }
     }
 
-    local Arrow: ImageButton = MenuScope:ConstructImageButton {} {
+    local Arrow: ImageButton
+    
+    Arrow = MenuScope:ConstructImageButton {
+        DontChangeColor = true
+    } {
         BackgroundTransparency = 1,
         Image = "http://www.roblox.com/asset/?id=8317995440",
         Position = UDim2.new(0, Config.Menu.SidebarWidth + Config.Menu.ToolButtonPadding, 0.5, 0),
@@ -173,8 +164,27 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
         Rotation = 180,
         AnchorPoint = Vector2.new(0, 0.5),
         ZIndex = 20,
+        ImageColor3 = Util.ModifyHSV(Config.Colors.Background, 0, 5/255, 15/255),
         [MenuScope.OnEvent("MouseButton1Click")] = function()
             SidebarOpened:set(not MenuScope.peek(SidebarOpened))
+
+            local opened = MenuScope.peek(SidebarOpened)
+
+            if (opened) then
+                Util.TweenButton(
+                    Arrow, 
+                    Config.Components.DefaultTransition, 
+                    Util.ModifyHSV(Config.Colors.Background, 0, 5/255, 15/255),
+                    "ImageColor3"
+                ):Play()
+            else
+                Util.TweenButton(
+                    Arrow, 
+                    Config.Components.DefaultTransition, 
+                    Util.ModifyHSV(Config.Colors.Background, 0, 7/255, 25/255),
+                    "ImageColor3"
+                ):Play()
+            end
         end
     };
 
@@ -244,8 +254,6 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
             else 
                 0
         )
-
-        SplashText.Size = UDim2.new(0, Holder.AbsoluteSize.X - Config.Menu.ToolButtonPadding, 0, 24)
 
         Arrow.Size = UDim2.new(
             Arrow.Size.Width, 
