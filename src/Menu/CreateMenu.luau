@@ -12,6 +12,10 @@ local CurrentTool: Tool.Tool? = nil
 
 local SplashImage: ImageLabel
 
+local SidebarOpened = MenuScope:Value(true)
+local Arrow: ImageButton
+local MenuFrame: Frame
+
 local function GenerateTools(): { Tool.Tool }
     local tools: { Tool.Tool } = {}
 
@@ -61,6 +65,17 @@ local function GenerateButtons(tools: { Tool.Tool }): { TextButton }
 
                 CurrentTool = tool
                 if (tool.Opened) then tool.Opened(tool) end
+
+                if (MenuFrame.AbsoluteSize.X < Config.Menu.MenuMinimumSize) then
+                    SidebarOpened:set(false)
+                    Util.TweenButton(
+                        Arrow, 
+                        Config.Components.DefaultTransition, 
+                        Util.ModifyHSV(Config.Colors.Background, 0, 7/255, 25/255),
+                        "ImageColor3"
+                    ):Play()
+                end
+
             end,
             OnDisabled = function()
                 if not (CurrentTool) then return end
@@ -94,7 +109,6 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
     local Runloop: RBXScriptConnection
 
     local Children = MenuScope.Children
-    local SidebarOpened = MenuScope:Value(true)
 
     local splashColor = Util.ModifyHSV(Config.Colors.Background, 0, 0, -0.05)
 
@@ -153,8 +167,6 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
             Buttons
         }
     }
-
-    local Arrow: ImageButton
     
     Arrow = MenuScope:ConstructImageButton {
         DontChangeColor = true
@@ -210,7 +222,7 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
     }
 
     -- The frame that has everything inside it.
-    local MenuFrame: Frame = MenuScope:New "Frame" {
+    MenuFrame = MenuScope:New "Frame" {
         Size = UDim2.new(1, 0, 1, 0),
         BackgroundColor3 = Config.Colors.Background,
         [Children] = {
@@ -227,24 +239,47 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
         }
     }
     MenuFrame.Parent = widget
-
+    
     local sidebarOpenedObserver = MenuScope:Observer(SidebarOpened)
-    sidebarOpenedObserver:onChange(function()
-        
+
+    local function updateMenuSize()
         local sidebarIsOpened = MenuScope.peek(SidebarOpened)
-        Holder.Size = if (sidebarIsOpened) then 
-            UDim2.new(1, -Config.Menu.SidebarWidth-Config.Menu.ArrowPadding, 1, 0) 
-        else 
-            UDim2.new(1, -Config.Menu.ArrowPadding, 1, 0) 
-
-        Arrow.Position = UDim2.new(0, if (sidebarIsOpened) then 
-            Config.Menu.SidebarWidth + Config.Menu.ToolButtonPadding
-        else
-            Config.Menu.ToolButtonPadding, 0.5, 0)
-
+        local menuIsSmall = MenuFrame.AbsoluteSize.X < Config.Menu.MenuMinimumSize
+        
         Sidebar.Visible = sidebarIsOpened
 
-    end)
+        if not (menuIsSmall) then
+
+            Holder.Size = if (sidebarIsOpened) then 
+                UDim2.new(1, -Config.Menu.SidebarWidth-Config.Menu.ArrowPadding, 1, 0) 
+            else 
+                UDim2.new(1, -Config.Menu.ArrowPadding, 1, 0) 
+
+            Arrow.Position = UDim2.new(0, if (sidebarIsOpened) then 
+                Config.Menu.SidebarWidth + Config.Menu.ToolButtonPadding
+            else
+                Config.Menu.ToolButtonPadding, 0.5, 0)
+
+            Sidebar.Size = UDim2.new(0, Config.Menu.SidebarWidth, 1, 0)
+
+            Holder.Visible = true
+
+        else
+
+            Holder.Visible = not sidebarIsOpened
+            Holder.Size = UDim2.new(1, -Config.Menu.ArrowPadding, 1, 0) 
+
+            Arrow.Position = if (sidebarIsOpened) then 
+                UDim2.new(1, -Config.Menu.ArrowPadding + Config.Menu.ToolButtonPadding, 0.5, 0)
+            else
+                UDim2.new(0, Config.Menu.ToolButtonPadding, 0.5, 0)
+
+            Sidebar.Size = UDim2.new(1, -Config.Menu.ArrowPadding, 1, 0)
+
+        end
+    end
+
+    sidebarOpenedObserver:onChange(updateMenuSize)
 
     Runloop = RunService.Heartbeat:Connect(function(deltaTime: number)
         ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, (#Buttons * Config.Menu.ButtonSize) + (Config.Menu.ToolButtonPadding * (#Buttons + 1)))
@@ -264,6 +299,8 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
                 math.min(Config.Menu.ArrowHeight, MenuFrame.AbsoluteSize.Y - Config.Menu.ToolButtonPadding * 2)
             )
         )
+
+        updateMenuSize()
 
         if (CurrentTool and CurrentTool.OnTick) then
             CurrentTool.OnTick(CurrentTool, deltaTime)
