@@ -4,13 +4,6 @@ local TweenService = game:GetService("TweenService")
 local Types = require(script.Parent.Types)
 local Config = require(script.Parent.Config)
 
-local function Lerp<T>(a: T, b: T, t: number): T
-    local a = a :: any
-    local b = b :: any
-
-    return a + (b - a) * t
-end
-
 --[=[
     Tweens a GuiButton. Used in components for automated button transitions when
     actions such as hovering or clicking occour.
@@ -85,7 +78,7 @@ end
     @return The Particles/Avg for the ParticleEmitter.
 ]=]
 local function GetParticlesAverage(Emitter: ParticleEmitter): number
-    return Emitter.Rate * ((Emitter.Lifetime.Min + Emitter.Lifetime.Max)/2)
+    return math.clamp(Emitter.Rate, 0, 500) * ((math.clamp(Emitter.Lifetime.Min, 0, 20) + math.clamp(Emitter.Lifetime.Max, 0, 20))/2)
 end
 
 --[=[
@@ -96,7 +89,7 @@ end
     @return The Particles/Sec for the ParticleEmitter.
 ]=]
 local function GetParticlesSecond(Emitter: ParticleEmitter): number
-    return Emitter.Rate * Emitter.TimeScale
+    return math.clamp(Emitter.Rate, 0, 500) * Emitter.TimeScale
 end
 
 --[=[
@@ -113,7 +106,7 @@ local function GetParticlesEmit(Emitter: ParticleEmitter): number
     local emitterData = GetEmitVFXData(Emitter)
 
     local burstAmount = emitterData.EmitCount
-    local durationAmount = Emitter.Rate * Emitter.TimeScale * emitterData.EmitDuration
+    local durationAmount = math.clamp(Emitter.Rate, 0, 500) * Emitter.TimeScale * emitterData.EmitDuration
 
     --[[ 
         Okay this is sort of a hack but I'm assuming that some people are
@@ -143,17 +136,26 @@ end
 ]=]
 local function GetParticlesAverageEmit(Emitter: ParticleEmitter)
     local emitterData = GetEmitVFXData(Emitter)
-    local averageLifetime = (Emitter.Lifetime.Min + Emitter.Lifetime.Max)/2
+    local averageLifetime = (math.clamp(Emitter.Lifetime.Min, 0, 20) + math.clamp(Emitter.Lifetime.Max, 0, 20))/2
     
     local repeatMultiplier = if (emitterData.EmitRepeatCount > Config.Optometer.MaxEmitRepeatCount) then
         Config.Optometer.MaxEmitRepeatCount + 1
     else
         1
 
-    local particlesAvg = Emitter.Rate * repeatMultiplier * averageLifetime
+    local particlesAvg = math.clamp(Emitter.Rate, 0, 500) * repeatMultiplier * averageLifetime
 
     local burstAmount = emitterData.EmitCount * averageLifetime
-    local averageAmount = Lerp(particlesAvg/2, particlesAvg, 1/(emitterData.EmitDuration * repeatMultiplier))
+    local averageAmount = if (emitterData.EmitDuration > 0) then
+        --[[
+            Technically "0" is an option for EmitDuration so the lerp can end up having an alpha of
+            1/0 which Roblox interprets as infinity and breaks everything.
+
+            The clamp and if statement are there to make sure that doesn't happen.
+        ]]
+        math.lerp(particlesAvg/2, particlesAvg, math.clamp(1/(emitterData.EmitDuration * repeatMultiplier), 0, 1))
+    else
+        0
 
     return burstAmount + averageAmount
 end
@@ -226,6 +228,8 @@ local function GetStatistics(Selection: {Instance})
             end
         end
     end
+
+    return collection
 end
 
 return {

@@ -73,6 +73,7 @@ export type StatisticData = {
     ShortName: string?,
 
     UseMeter: boolean?,
+    ButtonPriority: number?,
     
     ShowHighestWarningAsMax: boolean?,
 }

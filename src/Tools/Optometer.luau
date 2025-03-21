@@ -1,20 +1,33 @@
 local Tool = require(script.Parent.Parent.Menu.Tool)
 local Types = require(script.Parent.Parent.Types)
+local Fusion = require(script.Parent.Parent.Packages.Fusion)
+local Dynamics = require(script.Parent.Parent.Packages.Dynamics)
 
 local Util = require(script.Parent.Parent.Util)
 local Config = require(script.Parent.Parent.Config)
 
 local Selection = game:GetService("Selection")
 
+local CurrentTab: Fusion.Value<string>
+
 local DeltaCounter = 0
-
-local CurrentData: Types.StatisticData
-
-local OptometerData = Config.Optometer.Data
 
 local OptometerDial: ImageLabel
 local OptometerFrame: Frame
 local MeterLayoutFrame: Frame
+
+local OptometerData = Config.Optometer.Data
+
+local CurrentData: Fusion.Value<Types.Statistics<number>>
+local LastSelection: {Instance}
+
+local CounterDynamics = Dynamics.new(1.3, 0.5, 1.5, 0)
+local LabelDynamics = Dynamics.new(1, 1, 0, 0)
+
+local OptometerCurrentLabel: TextLabel
+local OptometerOptimizationLabel: TextLabel
+
+local OptometerTopText: TextLabel
 
 --[=[
     Uses sin() multiplication to calculate how much
@@ -34,6 +47,13 @@ local function CalculateDialShake(alpha): number
     )
 end
 
+local function GetDialZone(current: number, high: number?, dangerous: number?, cataclysmic: number?): "Safe" | "High" | "Dangerous" | "Cataclysmic"
+    if (cataclysmic and current >= cataclysmic) then return "Cataclysmic" end
+    if (dangerous and current >= dangerous) then return "Dangerous" end
+    if (high and current >= high) then return "High" end
+    return "Safe"
+end
+
 local function GetOptometerButtons(self: Tool.Tool): { TextButton }
     local nonMeter: { Types.StatisticData } = {}
     local buttons: { TextButton } = {}
@@ -44,23 +64,31 @@ local function GetOptometerButtons(self: Tool.Tool): { TextButton }
             BaseColor = Color3.new(0.321569, 0.380392, 0.572549),
             HoveredColor = Color3.new(0.384314, 0.447059, 0.647059),
             InteractedColor = Color3.new(0.270588, 0.325490, 0.478431),
-            DisabledColor = Color3.new(0.458824, 0.494118, 0.600000)
+            DisabledColor = Color3.new(0.458824, 0.494118, 0.600000),
+            [self.Scope.OnEvent("MouseButton1Click")] = function()
+                CurrentTab:set("Miscellaneous")
+            end
         }
     } {
         Text = "Miscellaneous",
         Size = UDim2.new(0, 120, 1, -2),
-        TextSize = 10
+        TextSize = 10,
+        LayoutOrder = 1000,
     }
 
     table.insert(buttons, miscButton)
 
-    for i, v in OptometerData do
+    for i, v: Types.StatisticData in OptometerData do
         if (v.UseMeter) then
             
             local catagoryButton: TextButton = self.Scope:ConstructTextButton {} {
                 Text = v.ShortName or v.DisplayName,
                 Size = UDim2.new(0, 120, 1, -2),
-                TextSize = 10
+                TextSize = 10,
+                LayoutOrder = 0 - (v.ButtonPriority or 0),
+                [self.Scope.OnEvent("MouseButton1Click")] = function()
+                    CurrentTab:set(i)
+                end
             }
 
             table.insert(buttons, catagoryButton)
@@ -81,6 +109,11 @@ local Optometer = Tool.new {
     Description = "See how well you optimized your VFX.",
 
     Opened = function(self: Tool.Tool)
+        -- The initialvalue of the FusionValue is just to have starting stats that don't mean anything
+        CurrentData = self.Scope:Value(Util.GetStatistics({}))
+        print(self.Scope.peek(CurrentData))
+        CurrentTab = self.Scope:Value("ParticlesOnAverage")
+
         local optometerButtons = GetOptometerButtons(self)
 
         local padding = self.Scope:New "UIPadding" {
@@ -90,11 +123,52 @@ local Optometer = Tool.new {
             PaddingTop = UDim.new(0, 6),
         }
 
+        local refreshSelectionButton: ImageButton = self.Scope:ConstructImageButton {
+            PropertyToChange = "BackgroundColor3",
+            Corner = UDim.new(0, 6)
+        } {
+            Image = "rbxassetid://86084882582277",
+            Position = UDim2.new(1, 0, 0, 0),
+            AnchorPoint = Vector2.new(1, 0),
+            Size = UDim2.new(0, 28, 0, 28),
+            ZIndex = 3,
+
+            [self.Scope.OnEvent("MouseButton1Click")] = function()
+                if not (LastSelection) then return end
+                local collectedInstances = {}
+
+                for _, parent in LastSelection do
+                    table.insert(collectedInstances, parent)
+                    for _, descendant in parent:GetDescendants() do
+                        table.insert(collectedInstances, descendant)
+                    end
+                end
+
+                CurrentData:set(Util.GetStatistics(collectedInstances))
+            end
+        }
+
         local checkSelectedButton: TextButton = self.Scope:ConstructTextButton {} {
             Position = UDim2.new(0, 0, 0, 0),
-            Size = UDim2.new(1, 0, 0, 28),
+            Size = UDim2.new(1, -28 - 6, 0, 28),
             Text = "Check Selected",
             TextScaled = true,
+
+            [self.Scope.OnEvent("MouseButton1Click")] = function()
+                local parentInstances: {Instance} = Selection:Get()
+                LastSelection = parentInstances
+
+                local collectedInstances = {}
+
+                for _, parent in parentInstances do
+                    table.insert(collectedInstances, parent)
+                    for _, descendant in parent:GetDescendants() do
+                        table.insert(collectedInstances, descendant)
+                    end
+                end
+
+                CurrentData:set(Util.GetStatistics(collectedInstances))
+            end
         }
         checkSelectedButton.FontFace.Bold = true
 
@@ -113,7 +187,8 @@ local Optometer = Tool.new {
             [self.Scope.Children] = {
                 self.Scope:New "UIListLayout" {
                     FillDirection = Enum.FillDirection.Horizontal,
-                    Padding = UDim.new(0, 6)
+                    Padding = UDim.new(0, 6),
+                    SortOrder = Enum.SortOrder.LayoutOrder
                 },
                 optometerButtons
             }
@@ -144,7 +219,7 @@ local Optometer = Tool.new {
             Rotation = 10,
         }
 
-        local optometerSafeZone = self.Scope:New "ImageLabel" {
+        local optometerSafeZone: ImageLabel = self.Scope:New "ImageLabel" {
             Image = "http://www.roblox.com/asset/?id=120581916761815",
             Size = UDim2.new(1, 0, 1, 0),
             BackgroundTransparency = 1,
@@ -152,7 +227,7 @@ local Optometer = Tool.new {
             ZIndex = 10
         }
 
-        local optometerWarningZone = self.Scope:New "ImageLabel" {
+        local optometerWarningZone: ImageLabel = self.Scope:New "ImageLabel" {
             Image = "http://www.roblox.com/asset/?id=120581916761815",
             Size = UDim2.new(1, 0, 1, 0),
             BackgroundTransparency = 1,
@@ -162,7 +237,7 @@ local Optometer = Tool.new {
             Rotation = 80
         }
 
-        local optometerDangerZone = self.Scope:New "ImageLabel" {
+        local optometerDangerZone: ImageLabel = self.Scope:New "ImageLabel" {
             Image = "http://www.roblox.com/asset/?id=120581916761815",
             Size = UDim2.new(1, 0, 1, 0),
             BackgroundTransparency = 1,
@@ -172,7 +247,7 @@ local Optometer = Tool.new {
             Rotation = 120
         }
 
-        local optometerCatastrophicZone = self.Scope:New "ImageLabel" {
+        local optometerCatastrophicZone: ImageLabel = self.Scope:New "ImageLabel" {
             Image = "http://www.roblox.com/asset/?id=120581916761815",
             Size = UDim2.new(1, 0, 1, 0),
             BackgroundTransparency = 1,
@@ -193,7 +268,7 @@ local Optometer = Tool.new {
             TextYAlignment = Enum.TextYAlignment.Top
         }
 
-        local optometerCurrentLabel: TextLabel = self.Scope:PresetTextLabel() {
+        OptometerCurrentLabel = self.Scope:PresetTextLabel() {
             Position = UDim2.new(0, 0, 0, 6),
             Size = UDim2.new(1, 0, 1, -28),
             Text = "1000",
@@ -208,7 +283,7 @@ local Optometer = Tool.new {
             }
         }
 
-        local optometerOptimizationLabel: TextLabel = self.Scope:PresetTextLabel() {
+        OptometerOptimizationLabel = self.Scope:PresetTextLabel() {
             Position = UDim2.new(0, 0, 1, 0),
             AnchorPoint = Vector2.new(0, 1),
             Size = UDim2.new(1, 0, 0, 32),
@@ -284,9 +359,17 @@ local Optometer = Tool.new {
             BackgroundTransparency = 1,
 
             [self.Scope.Children] = {
-                optometerCurrentLabel,
-                optometerOptimizationLabel
+                OptometerCurrentLabel,
+                OptometerOptimizationLabel
             }
+        }
+
+        OptometerTopText = self.Scope:PresetTextLabel() {
+            Position = UDim2.new(0.5, 0, 0, 0),
+            AnchorPoint = Vector2.new(0.5, 0),
+            Size = UDim2.new(1, 0, 0, 20),
+            TextScaled = true,
+            Text = "Particles on Average per Emit"
         }
 
         MeterLayoutFrame = self.Scope:New "Frame" {
@@ -308,22 +391,52 @@ local Optometer = Tool.new {
                 },
 
                 OptometerFrame,
-                
-                self.Scope:PresetTextLabel() {
-                    Position = UDim2.new(0.5, 0, 0, 0),
-                    AnchorPoint = Vector2.new(0.5, 0),
-                    Size = UDim2.new(1, 0, 0, 20),
-                    TextScaled = true,
-                    Text = "Particles on Average per Emit"
-                }
+                OptometerTopText
             }
         }
 
+        local function DataUpdated()
+            local tab = self.Scope.peek(CurrentTab)
+            local data = self.Scope.peek(CurrentData)
+
+            if (tab ~= "Miscellaneous") then
+                local currentConfig: Types.StatisticData = OptometerData[tab]
+                local text = if (currentConfig.ShowHighestWarningAsMax) then 
+                    currentConfig.Cataclysmic 
+                    or currentConfig.Dangerous 
+                    or currentConfig.High 
+                    or currentConfig.Max
+                else
+                    currentConfig.Max
+
+                optometerMaximumLable.Text = text or 0
+                OptometerTopText.Text = currentConfig.DisplayName
+                
+                if (currentConfig.Max) then
+                    optometerWarningZone.Rotation = ((if (currentConfig.High) then currentConfig.High/currentConfig.Max else 1) * 180)
+                    optometerDangerZone.Rotation = ((if (currentConfig.Dangerous) then currentConfig.Dangerous/currentConfig.Max else 1) * 180)
+                    optometerCatastrophicZone.Rotation = ((if (currentConfig.Cataclysmic) then currentConfig.Cataclysmic/currentConfig.Max else 1) * 180)
+                end
+
+                print(currentConfig.High, currentConfig.Max, optometerWarningZone)
+
+                optometerSafeZone.Visible = (currentConfig.High or currentConfig.Dangerous or currentConfig.Cataclysmic) ~= nil
+            end
+
+            MeterLayoutFrame.Visible = (tab ~= "Miscellaneous")
+            labelFrame.Visible = (tab ~= "Miscellaneous")
+        end
+
+        self.Scope:Observer(CurrentTab):onChange(DataUpdated)
+        self.Scope:Observer(CurrentData):onChange(DataUpdated)
+
         MeterLayoutFrame.Parent = self.MenuFrame
-        padding.Parent = self.MenuFrame
-        checkSelectedButton.Parent = self.MenuFrame
-        optionFrame.Parent = self.MenuFrame
         labelFrame.Parent = self.MenuFrame
+        
+        checkSelectedButton.Parent = self.MenuFrame
+        refreshSelectionButton.Parent = self.MenuFrame
+        optionFrame.Parent = self.MenuFrame
+        padding.Parent = self.MenuFrame
     end,
 
     Closed = function(self: Tool.Tool)
@@ -336,7 +449,46 @@ local Optometer = Tool.new {
     OnTick = function(self: Tool.Tool, deltaTime: number)
         DeltaCounter += deltaTime
 
-        OptometerDial.Rotation = -3 * CalculateDialShake(DeltaCounter * 0.6)
+        local tab = self.Scope.peek(CurrentTab)
+
+        if (tab ~= "Miscellaneous") then
+            local currentStatisticsAmount: number = self.Scope.peek(CurrentData)[tab] or 0
+            local currentConfig: Types.StatisticData = OptometerData[tab]
+
+            assert(currentConfig and tab, "Tab is invalid")
+
+            -- math.max makes sure the number never becomes negative 0
+            local optometerDialMovement = math.max(CounterDynamics:Update(deltaTime, (math.clamp(currentStatisticsAmount or 0, 0, 10e8)/(currentConfig.Max or 1))), 0)
+            local optometerDisplayMovement = math.max(LabelDynamics:Update(deltaTime, math.clamp(currentStatisticsAmount or 0, 0, 10e8)), 0)
+
+            local dialAlpha = math.clamp(optometerDialMovement, 0, 1)
+            local dialOffset = -3 * CalculateDialShake(DeltaCounter * 0.6)
+
+            OptometerDial.Rotation = ((dialAlpha * 180) - 90) + (dialOffset * math.pow(dialAlpha, 2))
+            
+            OptometerCurrentLabel.Text = if ((math.round(optometerDisplayMovement)) < 10e8) then 
+                tostring(math.round(optometerDisplayMovement)) 
+            else
+                -- Tiny easter egg for anyone stupid enough 
+                "Infinity"
+
+            local dialZone = GetDialZone(currentStatisticsAmount, currentConfig.High, currentConfig.Dangerous, currentConfig.Cataclysmic)
+            OptometerOptimizationLabel.Text = dialZone:upper()
+            
+            local dangerColor = Color3.new(1, 1, 1)
+
+            if (dialZone == "High") then
+                dangerColor = Color3.new(1, 1, 0)
+            elseif (dialZone == "Dangerous") then
+                dangerColor = Color3.new(1, 0, 0)
+            elseif (dialZone == "Cataclysmic") then
+                dangerColor = Color3.new(0.3, 0, 0)
+            end
+
+            OptometerOptimizationLabel.TextColor3 = dangerColor
+            OptometerCurrentLabel.TextColor3 = dangerColor
+
+        end
 
         OptometerFrame.Size = UDim2.new(1, 0, 0, MeterLayoutFrame.AbsoluteSize.Y - 38 - 12)
     end

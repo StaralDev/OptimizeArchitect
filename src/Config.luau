@@ -147,6 +147,7 @@ local OptometerData: Types.Statistics<Types.StatisticData> = {
         Cataclysmic = 16000,
         Max = 16500,
         ShowHighestWarningAsMax = true,
+        ButtonPriority = 10,
 
         DisplayName = "Particles On Average",
         ShortName = "Particles/Avg",

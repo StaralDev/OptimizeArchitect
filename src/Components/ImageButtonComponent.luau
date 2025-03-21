@@ -11,8 +11,10 @@ local function new(
         Colors: Types.InteractColorOverride?,
         BackgroundColors: Types.InteractColorOverride?,
         Transition: Types.TransitionOverride?,
+        Corner: UDim?,
         Enabled: boolean?,
         DontChangeColor: boolean?,
+        PropertyToChange: "ImageColor3" | "BackgroundColor3" | string | nil,
         
         MouseUp: (MousePosition: Vector2) -> ()?,
         MouseDown: (MousePosition: Vector2) -> ()?,
@@ -24,9 +26,11 @@ local function new(
 
     assert(Scope)
     local button: ImageButton
+
+    properties.PropertyToChange = properties.PropertyToChange or "ImageColor3"
     
     button = Scope:New "ImageButton" {
-        ImageColor3 = (properties.Colors or Config.Components.DefaultButtonColor).BaseColor,
+        [properties.PropertyToChange or "ImageColor3"] = (properties.Colors or Config.Components.DefaultButtonColor).BaseColor,
 
         [Scope.OnEvent("MouseEnter")] = function(MouseX: number, MouseY: number)
             if (properties.MouseEnter) then properties.MouseEnter(Vector2.new(MouseX, MouseY)) end
@@ -36,7 +40,7 @@ local function new(
                 button, 
                 properties.Transition or Config.Components.DefaultTransition, 
                 (properties.Colors or Config.Components.DefaultButtonColor).HoveredColor,
-                "ImageColor3"
+                properties.PropertyToChange
             )
 
             if (properties.BackgroundColors) then
@@ -57,7 +61,7 @@ local function new(
                 button, 
                 properties.Transition or Config.Components.DefaultTransition,
                 (properties.Colors or Config.Components.DefaultButtonColor).BaseColor,
-                "ImageColor3"
+                properties.PropertyToChange
             )
 
             if (properties.BackgroundColors) then
@@ -78,7 +82,7 @@ local function new(
                 button, 
                 properties.Transition or Config.Components.DefaultTransition,
                 (properties.Colors or Config.Components.DefaultButtonColor).InteractedColor,
-                "ImageColor3"
+                properties.PropertyToChange
             )
 
             if (properties.BackgroundColors) then
@@ -99,7 +103,7 @@ local function new(
                 button, 
                 properties.Transition or Config.Components.DefaultTransition,
                 (properties.Colors or Config.Components.DefaultButtonColor).HoveredColor,
-                "ImageColor3"
+                properties.PropertyToChange
             )
 
             if (properties.BackgroundColors) then
@@ -111,6 +115,14 @@ local function new(
             end
         end
     } :: any
+
+    if (properties.Corner) then
+        local corner: UICorner = Scope:New "UICorner" {
+            CornerRadius = properties.Corner
+        } :: any
+
+        corner.Parent = button
+    end
 
     return Scope:Hydrate(button)
 end
