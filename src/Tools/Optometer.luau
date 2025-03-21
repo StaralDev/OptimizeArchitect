@@ -8,6 +8,8 @@ local Selection = game:GetService("Selection")
 
 local DeltaCounter = 0
 
+local CurrentData: Types.StatisticData
+
 local OptometerData = Config.Optometer.Data
 
 local OptometerDial: ImageLabel
@@ -90,14 +92,14 @@ local Optometer = Tool.new {
 
         local checkSelectedButton: TextButton = self.Scope:ConstructTextButton {} {
             Position = UDim2.new(0, 0, 0, 0),
-            Size = UDim2.new(1, 0, 0, 24),
+            Size = UDim2.new(1, 0, 0, 28),
             Text = "Check Selected",
             TextScaled = true,
         }
         checkSelectedButton.FontFace.Bold = true
 
         local optionFrame: ScrollingFrame = self.Scope:New "ScrollingFrame" {
-            Position = UDim2.new(0, 0, 0, 30),
+            Position = UDim2.new(0, 0, 0, 34),
             Size = UDim2.new(1, 0, 0, 18),
             ScrollBarThickness = Config.Menu.ScrollbarThickness,
             HorizontalScrollBarInset = Enum.ScrollBarInset.ScrollBar,
@@ -192,8 +194,8 @@ local Optometer = Tool.new {
         }
 
         local optometerCurrentLabel: TextLabel = self.Scope:PresetTextLabel() {
-            Position = UDim2.new(0, 0, 0.5, 14),
-            Size = UDim2.new(1, 0, 0.5, -28),
+            Position = UDim2.new(0, 0, 0, 6),
+            Size = UDim2.new(1, 0, 1, -28),
             Text = "1000",
             ZIndex = 115,
             TextScaled = true,
@@ -209,7 +211,7 @@ local Optometer = Tool.new {
         local optometerOptimizationLabel: TextLabel = self.Scope:PresetTextLabel() {
             Position = UDim2.new(0, 0, 1, 0),
             AnchorPoint = Vector2.new(0, 1),
-            Size = UDim2.new(1, 0, 0, 20),
+            Size = UDim2.new(1, 0, 0, 32),
             Text = "SAFE",
             Font = Enum.Font.GothamBlack,
             ZIndex = 115,
@@ -226,14 +228,14 @@ local Optometer = Tool.new {
         OptometerFrame = self.Scope:New "Frame" {
             BackgroundTransparency = 1,
             Position = UDim2.new(0.5, 0, 0, 26),
-            Size = UDim2.new(0.6, 0, 1, 0),
+            Size = UDim2.new(1, 0, 1, -20),
             AnchorPoint = Vector2.new(0.5, 0),
             ClipsDescendants = false,
             
             [self.Scope.Children] = {
                 self.Scope:New "UIAspectRatioConstraint" {
                     AspectRatio = 1,
-                    DominantAxis = Enum.DominantAxis.Height
+                    DominantAxis = Enum.DominantAxis.Width
                 },
                 optometerImage,
                 OptometerDial,
@@ -266,13 +268,24 @@ local Optometer = Tool.new {
                 },
 
                 optometerMaximumLable,
-                optometerCurrentLabel,
-                optometerOptimizationLabel,
 
                 optometerSafeZone,
                 optometerWarningZone,
                 optometerDangerZone,
                 optometerCatastrophicZone,
+            }
+        }
+
+        local labelFrame: Frame = self.Scope:New "Frame" {
+            Position = UDim2.new(0.5, 0, 1, -6),
+            Size = UDim2.new(1, -12, 0.4, 0),
+            AnchorPoint = Vector2.new(0.5, 1),
+            ZIndex = 150,
+            BackgroundTransparency = 1,
+
+            [self.Scope.Children] = {
+                optometerCurrentLabel,
+                optometerOptimizationLabel
             }
         }
 
@@ -310,6 +323,7 @@ local Optometer = Tool.new {
         padding.Parent = self.MenuFrame
         checkSelectedButton.Parent = self.MenuFrame
         optionFrame.Parent = self.MenuFrame
+        labelFrame.Parent = self.MenuFrame
     end,
 
     Closed = function(self: Tool.Tool)
@@ -324,9 +338,7 @@ local Optometer = Tool.new {
 
         OptometerDial.Rotation = -3 * CalculateDialShake(DeltaCounter * 0.6)
 
-        print(OptometerDial.Rotation)
-
-        OptometerFrame.Size = UDim2.new(0.6, 0, 0, MeterLayoutFrame.AbsoluteSize.Y - 38)
+        OptometerFrame.Size = UDim2.new(1, 0, 0, MeterLayoutFrame.AbsoluteSize.Y - 38 - 36)
     end
 }
 
