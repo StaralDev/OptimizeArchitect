@@ -33,7 +33,7 @@ Config.Menu = {
     ButtonSize = 16,
     ScrollbarThickness = 4,
     ButtonTextSize = 12,
-    MenuMinimumSize = 340,
+    MenuMinimumSize = 360,
 }
 
 Config.Components = {

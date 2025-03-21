@@ -278,7 +278,7 @@ local Optometer = Tool.new {
 
         local labelFrame: Frame = self.Scope:New "Frame" {
             Position = UDim2.new(0.5, 0, 1, -6),
-            Size = UDim2.new(1, -12, 0.4, 0),
+            Size = UDim2.new(1, -12, 0.4, -16),
             AnchorPoint = Vector2.new(0.5, 1),
             ZIndex = 150,
             BackgroundTransparency = 1,
@@ -338,7 +338,7 @@ local Optometer = Tool.new {
 
         OptometerDial.Rotation = -3 * CalculateDialShake(DeltaCounter * 0.6)
 
-        OptometerFrame.Size = UDim2.new(1, 0, 0, MeterLayoutFrame.AbsoluteSize.Y - 38 - 36)
+        OptometerFrame.Size = UDim2.new(1, 0, 0, MeterLayoutFrame.AbsoluteSize.Y - 38 - 12)
     end
 }
 
