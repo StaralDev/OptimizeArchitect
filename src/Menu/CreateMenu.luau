@@ -16,6 +16,8 @@ local SidebarOpened = MenuScope:Value(true)
 local Arrow: ImageButton
 local MenuFrame: Frame
 
+local Widget: DockWidgetPluginGui
+
 local function GenerateTools(): { Tool.Tool }
     local tools: { Tool.Tool } = {}
 
@@ -61,9 +63,12 @@ local function GenerateButtons(tools: { Tool.Tool }): { TextButton }
                     CurrentTool.Scope:doCleanup()
                     CurrentTool:RegenerateScope()
                     CurrentTool = nil
+                    Widget.Title = Config.Architect.Title
                 end
 
                 CurrentTool = tool
+                assert(CurrentTool, "No tool created")
+                Widget.Title = Config.Architect.Title..": "..CurrentTool.Title
                 if (tool.Opened) then tool.Opened(tool) end
 
                 if (MenuFrame.AbsoluteSize.X < Config.Menu.MenuMinimumSize) then
@@ -88,6 +93,7 @@ local function GenerateButtons(tools: { Tool.Tool }): { TextButton }
                     CurrentTool.Scope:doCleanup()
                     CurrentTool:RegenerateScope()
                     CurrentTool = nil
+                    Widget.Title = Config.Architect.Title
                 end
             end,
             ToggledColors = Config.Components.SelectedButtonColor,
@@ -105,7 +111,7 @@ local function GenerateButtons(tools: { Tool.Tool }): { TextButton }
 end
 
 local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
-
+    Widget = widget
     local Runloop: RBXScriptConnection
 
     local Children = MenuScope.Children
