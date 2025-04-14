@@ -64,6 +64,7 @@ Config.Components = {
 
 local OptometerData: Types.Statistics<Types.StatisticData> = {
     Instances = {
+        ManualOrder = -999,
         High = 500,
         Dangerous = 1000,
         Cataclysmic = 2000,
@@ -75,6 +76,7 @@ local OptometerData: Types.Statistics<Types.StatisticData> = {
     },
 
     Parts = {
+        ManualOrder = -900,
         High = 150,
         Dangerous = 300,
         Cataclysmic = 1000,
@@ -86,16 +88,19 @@ local OptometerData: Types.Statistics<Types.StatisticData> = {
     },
 
     Beams = {
+        ManualOrder = 18,
         DisplayName = "Beams",
         UseMeter = false
     },
 
     EnabledBeams = {
+        ManualOrder = 19,
         DisplayName = "Enabled Beams",
         UseMeter = false
     },
 
     BeamSegments = {
+        ManualOrder = 15,
         High = 2000,
         Dangerous = 4000,
         Cataclysmic = 8000,
@@ -107,41 +112,49 @@ local OptometerData: Types.Statistics<Types.StatisticData> = {
     },
 
     Constraints = {
+        ManualOrder = 50,
         DisplayName = "Constraints",
         UseMeter = false
     },
 
     Attachments = {
+        ManualOrder = 20,
         DisplayName = "Attachments",
         UseMeter = false
     },
 
     Motors = {
+        ManualOrder = 21,
         DisplayName = "Motor6Ds",
         UseMeter = false
     },
 
     Trails = {
+        ManualOrder = 22,
         DisplayName = "Trails",
         UseMeter = false
     },
 
     EnabledTrails = {
+        ManualOrder = 23,
         DisplayName = "EnabledTrails",
         UseMeter = false
     },
 
     ParticleEmitters = {
+        ManualOrder = 10,
         DisplayName = "ParticleEmitters",
         UseMeter = false
     },
 
     EnabledEmitters = {
+        ManualOrder = 11,
         DisplayName = "Enabled ParticleEmitters",
         UseMeter = false
     },
 
     ParticlesOnAverage = {
+        ManualOrder = -10,
         High = 4000,
         Dangerous = 8000,
         Cataclysmic = 16000,
@@ -155,6 +168,7 @@ local OptometerData: Types.Statistics<Types.StatisticData> = {
     },
 
     ParticlesOnAveragePerEmit = {
+        ManualOrder = -9,
         High = 2000,
         Dangerous = 3000,
         Cataclysmic = 6000,
@@ -166,6 +180,7 @@ local OptometerData: Types.Statistics<Types.StatisticData> = {
     },
 
     ParticlesPerSecond = {
+        ManualOrder = -8,
         Max = 10000,
         UseMeter = false,
         
@@ -174,6 +189,7 @@ local OptometerData: Types.Statistics<Types.StatisticData> = {
     },
 
     ParticlesPerEmit = {
+        ManualOrder = -7,
         DisplayName = "Particles/Emit",
         UseMeter = false
     }
@@ -182,6 +198,10 @@ local OptometerData: Types.Statistics<Types.StatisticData> = {
 Config.Optometer = {
     Data = OptometerData,
     MaxEmitRepeatCount = 10
+}
+
+Config.NodeFX = {
+    GridSize = 24,
 }
 
 return Config

@@ -54,6 +54,28 @@ local function GetDialZone(current: number, high: number?, dangerous: number?, c
     return "Safe"
 end
 
+--[=[
+    Returns one of 4 paramaters depending on if the Current number is within that zone on the dial.
+
+    @param current The number to be tested
+    @param data The data about this Statistic
+    @param onSafe The param to be selected if the current number is safe
+    @param onHigh The param to be selected if the current number is high
+    @param onDangerous The param to be selected if the current number is dangerous
+    @param onCataclysmic The param to be selected if the current number is cataclysmic
+
+    @return The param coresponding to the place on the dial
+]=]
+local function ChooseFromDialZone<T>(current: number, data: Types.StatisticData, onSafe: T, onHigh: T, onDangerous: T, onCataclysmic: T): T
+    local dialZone = GetDialZone(current, data.High, data.Dangerous, data.Cataclysmic)
+    if (dialZone == "Safe") then return onSafe end
+    if (dialZone == "High") then return onHigh end
+    if (dialZone == "Dangerous") then return onDangerous end
+    if (dialZone == "Cataclysmic") then return onCataclysmic end
+
+    return onSafe
+end
+
 local function GetOptometerButtons(self: Tool.Tool): { TextButton }
     local nonMeter: { Types.StatisticData } = {}
     local buttons: { TextButton } = {}
@@ -64,16 +86,17 @@ local function GetOptometerButtons(self: Tool.Tool): { TextButton }
             BaseColor = Color3.new(0.321569, 0.380392, 0.572549),
             HoveredColor = Color3.new(0.384314, 0.447059, 0.647059),
             InteractedColor = Color3.new(0.270588, 0.325490, 0.478431),
-            DisabledColor = Color3.new(0.458824, 0.494118, 0.600000),
-            [self.Scope.OnEvent("MouseButton1Click")] = function()
-                CurrentTab:set("Miscellaneous")
-            end
+            DisabledColor = Color3.new(0.458824, 0.494118, 0.600000)
         }
     } {
         Text = "Miscellaneous",
         Size = UDim2.new(0, 120, 1, -2),
         TextSize = 10,
         LayoutOrder = 1000,
+
+        [self.Scope.OnEvent("MouseButton1Click")] = function()
+            CurrentTab:set("Miscellaneous")
+        end
     }
 
     table.insert(buttons, miscButton)
@@ -111,7 +134,6 @@ local Optometer = Tool.new {
     Opened = function(self: Tool.Tool)
         -- The initialvalue of the FusionValue is just to have starting stats that don't mean anything
         CurrentData = self.Scope:Value(Util.GetStatistics({}))
-        print(self.Scope.peek(CurrentData))
         CurrentTab = self.Scope:Value("ParticlesOnAverage")
 
         local optometerButtons = GetOptometerButtons(self)
@@ -369,7 +391,7 @@ local Optometer = Tool.new {
             AnchorPoint = Vector2.new(0.5, 0),
             Size = UDim2.new(1, 0, 0, 20),
             TextScaled = true,
-            Text = "Particles on Average per Emit"
+            Text = "Particles On Average"
         }
 
         MeterLayoutFrame = self.Scope:New "Frame" {
@@ -392,6 +414,33 @@ local Optometer = Tool.new {
 
                 OptometerFrame,
                 OptometerTopText
+            }
+        }
+
+        local GeneralDetailTopbar: TextLabel = self.Scope:PresetTextLabel() {
+            Position = UDim2.new(0.5, 0, 0, 54),
+            AnchorPoint = Vector2.new(0.5, 0),
+            Size = UDim2.new(1, 0, 0, 20),
+            TextScaled = true,
+            Text = "Miscellaneous"
+        }
+
+        local GeneralDetailFrame: ScrollingFrame = self.Scope:New "ScrollingFrame" {
+            BackgroundTransparency = 1,
+            Size = UDim2.new(1, 0, 1, -20 - 54 - 6),
+            Position = UDim2.new(0, 0, 0, 20 + 54 + 6),
+            ScrollBarImageTransparency = 0,
+            ScrollBarImageColor3 = Config.Colors.ScrollBar,
+            ScrollBarThickness = Config.Menu.ScrollbarThickness,
+            HorizontalScrollBarInset = Enum.ScrollBarInset.ScrollBar,
+            VerticalScrollBarPosition = Enum.VerticalScrollBarPosition.Right,
+
+            [self.Scope.Children] = {
+                self.Scope:New "UIListLayout" {
+                    FillDirection = Enum.FillDirection.Vertical,
+                    Padding = UDim.new(0, 6),
+                    SortOrder = Enum.SortOrder.LayoutOrder
+                },
             }
         }
 
@@ -418,17 +467,87 @@ local Optometer = Tool.new {
                     optometerCatastrophicZone.Rotation = ((if (currentConfig.Cataclysmic) then currentConfig.Cataclysmic/currentConfig.Max else 1) * 180)
                 end
 
-                print(currentConfig.High, currentConfig.Max, optometerWarningZone)
-
                 optometerSafeZone.Visible = (currentConfig.High or currentConfig.Dangerous or currentConfig.Cataclysmic) ~= nil
+            else
+                for _, v in GeneralDetailFrame:GetChildren() do
+                    if (v:IsA("Frame")) then
+                        v:Destroy()
+                    end
+                end
+
+                local order = 0
+                for i, v: Types.StatisticData in OptometerData do
+                    order += 1
+                    local currentStat = math.clamp(math.round((data[i] or 0) * 100) / 100, 0, 10e8)
+                    local stringifiedStat = if (currentStat or 0 > 10e8) then tostring(currentStat) else "Infinity"
+
+                    local amountTextColor = ChooseFromDialZone(currentStat, v, 
+                        Color3.new(1, 1, 1), 
+                        Color3.new(1, 1, 0), 
+                        Color3.new(1, 0, 0), 
+                        Color3.new(0.65, 0, 0)
+                    )
+                    local nameTextColor = Util.ModifyHSV(amountTextColor, 0, 0, -0.15)
+                    local isCataclysmic = GetDialZone(currentStat, v.High, v.Dangerous, v.Cataclysmic) ~= "Safe"
+
+                    local strokeStart = if (isCataclysmic) then
+                        `<stroke color="#000000">`
+                    else
+                        ""
+
+                    local strokeEnd = if (isCataclysmic) then
+                        `</stroke>`
+                    else
+                        ""
+
+                    local statFrame: Frame = self.Scope:New "Frame" {
+                        Size = UDim2.new(1, -6, 0, 18),
+                        BackgroundColor3 = ChooseFromDialZone(currentStat, v,
+                            Color3.fromHSV(0.642857, 0.362069, 0.227451),
+                            Color3.fromRGB(87, 79, 94),
+                            Color3.fromRGB(87, 52, 94),
+                            Color3.fromRGB(54, 32, 63)
+                        ),
+                        LayoutOrder = v.ManualOrder or order,
+
+                        [self.Scope.Children] = {
+
+                            self.Scope:New "UICorner" {
+                                CornerRadius = UDim.new(0, 6),
+                            },
+
+                            self.Scope:PresetTextLabel() {
+                                BackgroundTransparency = 1,
+                                TextSize = 14,
+                                RichText = true,
+                                TextXAlignment = Enum.TextXAlignment.Left,
+                                Text = `  {strokeStart}<font color="#{nameTextColor:ToHex()}">{v.ShortName or v.DisplayName or i}:</font> <font color="#{amountTextColor:ToHex()}">{stringifiedStat}</font>{strokeEnd}`,
+                                Size = UDim2.new(1, 0, 1, -2),
+                                Position = UDim2.new(0, 0, 0, 1)
+                            }
+                        }
+                    }
+
+                    statFrame.Parent = GeneralDetailFrame
+                end
+
+                GeneralDetailFrame.CanvasSize = UDim2.new(0, 0, 0, order * 24)
             end
 
-            MeterLayoutFrame.Visible = (tab ~= "Miscellaneous")
-            labelFrame.Visible = (tab ~= "Miscellaneous")
+            local tabMiscellaneous = (tab == "Miscellaneous")
+
+            MeterLayoutFrame.Visible = not tabMiscellaneous
+            labelFrame.Visible = not tabMiscellaneous
+
+            GeneralDetailFrame.Visible = tabMiscellaneous
+            GeneralDetailTopbar.Visible = tabMiscellaneous
         end
 
         self.Scope:Observer(CurrentTab):onChange(DataUpdated)
         self.Scope:Observer(CurrentData):onChange(DataUpdated)
+
+        GeneralDetailFrame.Parent = self.MenuFrame
+        GeneralDetailTopbar.Parent = self.MenuFrame
 
         MeterLayoutFrame.Parent = self.MenuFrame
         labelFrame.Parent = self.MenuFrame
@@ -437,6 +556,8 @@ local Optometer = Tool.new {
         refreshSelectionButton.Parent = self.MenuFrame
         optionFrame.Parent = self.MenuFrame
         padding.Parent = self.MenuFrame
+
+        DataUpdated()
     end,
 
     Closed = function(self: Tool.Tool)

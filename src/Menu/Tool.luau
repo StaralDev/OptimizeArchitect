@@ -52,7 +52,6 @@ function new<T>(t: ToolConfig?): Tool
     t.__ToolExtra = ToolExtra
 
     local constructedTool: Tool = setmetatable(t, {__index = ToolExtra})
-    print(ToolExtra.Scope.ConstructImageButton)
     if (constructedTool.OnPluginLoaded) then constructedTool.OnPluginLoaded(constructedTool) end
     return constructedTool
 end

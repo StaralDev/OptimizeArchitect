@@ -74,6 +74,7 @@ export type StatisticData = {
 
     UseMeter: boolean?,
     ButtonPriority: number?,
+    ManualOrder: number?,
     
     ShowHighestWarningAsMax: boolean?,
 }

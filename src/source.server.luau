@@ -1,10 +1,9 @@
-local Architect = require(script.Parent.setup)
-local Tool = require(script.Parent.Menu.Tool)
+local RunService = game:GetService("RunService")
 
-Tool.SetPlugin(plugin)
-Architect(plugin)
+if (not RunService:IsRunning()) then
+    local Architect = require(script.Parent.setup)
+    local Tool = require(script.Parent.Menu.Tool)
 
---for _, v in script.Parent.Tools:GetChildren() do
---    local newTool: Tool.Tool<any, any> = require(v) :: any
---    if (newTool.OnPluginLoaded) then newTool.OnPluginLoaded(newTool.self) end
---end
+    Tool.SetPlugin(plugin)
+    Architect(plugin)
+end

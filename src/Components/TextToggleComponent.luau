@@ -96,7 +96,6 @@ local function new(
         end
     } :: any
     
-    print(properties.Enabled or false)
     button:SetAttribute("Enabled", properties.Enabled or false)
     Util.TweenButton(
         button, 
