@@ -12,7 +12,7 @@ Config.Architect = {
     RawRepositoryUrl = "https://raw.githubusercontent.com/StaralDev/OptimizeArchitect",
     UpdateLogUrl = "/master/UpdateLog.json",
 
-    CurrentVersion = 0.01
+    CurrentVersion = 0.02
 }
 
 Config.Colors = {

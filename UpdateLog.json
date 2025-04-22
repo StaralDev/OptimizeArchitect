@@ -3,5 +3,11 @@
         "Name": "0.0.1 Beta",
         "Version": 0.01,
         "Description": "This is a test for the Update Log system. This should be pulling in information from a JSON file in the repo."
+    },
+
+    {
+        "Name": "0.0.2 Beta",
+        "Version": 0.02,
+        "Description": "Embedded the Miscellaneous window of the Optometer in other catagories when the window is large. Also fixed bug related to Optometer not updating."
     }
 ]
