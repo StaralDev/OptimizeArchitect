@@ -110,7 +110,7 @@ local function GenerateButtons(tools: { Tool.Tool }): { TextButton }
     return buttons
 end
 
-local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
+local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui, activatorButton: PluginToolbarButton)
     Widget = widget
     local Runloop: RBXScriptConnection
 
@@ -417,6 +417,30 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui)
             ):Play()
         end
 
+    end)
+
+    widget:BindToClose(function()
+        activatorButton:SetActive(false)
+
+        for _, v in Buttons do
+            v:SetAttribute("Enabled", false)
+        end
+
+        SplashImage.Visible = true
+
+        if (CurrentTool) then
+            if (CurrentTool.Cleanup) then
+                for _, v in CurrentTool.Cleanup do
+                    v:Disconnect()
+                end
+            end
+            
+            if (CurrentTool.Closed) then CurrentTool.Closed(CurrentTool) end
+            CurrentTool.Scope:doCleanup()
+            CurrentTool:RegenerateScope()
+            CurrentTool = nil
+            Widget.Title = Config.Architect.Title
+        end
     end)
 end
 

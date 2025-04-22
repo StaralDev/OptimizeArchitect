@@ -24,16 +24,13 @@ function Architect(plugin: Plugin)
     )
     widget.Title = Config.Architect.Title
     
-    widget:BindToClose(function()
-        activatorButton:SetActive(false)
-    end)
-
     activatorButton.Click:Connect(function()
         widget.Enabled = not widget.Enabled
         activatorButton:SetActive(widget.Enabled)
     end)
 
-    CreateMenu(plugin, widget)
+    CreateMenu(plugin, widget, activatorButton)
+
 end
 
 return Architect

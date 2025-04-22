@@ -21,8 +21,8 @@ local OptometerData = Config.Optometer.Data
 local CurrentData: Fusion.Value<Types.Statistics<number>>
 local LastSelection: {Instance}
 
-local CounterDynamics = Dynamics.new(1.3, 0.5, 1.5, 0)
-local LabelDynamics = Dynamics.new(1, 1, 0, 0)
+local CounterDynamics
+local LabelDynamics
 
 local OptometerCurrentLabel: TextLabel
 local OptometerOptimizationLabel: TextLabel
@@ -132,6 +132,9 @@ local Optometer = Tool.new {
     Description = "See how well you optimized your VFX.",
 
     Opened = function(self: Tool.Tool)
+        LabelDynamics = Dynamics.new(1, 1, 0, 0)
+        CounterDynamics = Dynamics.new(1.3, 0.5, 1.5, 0)
+
         -- The initialvalue of the FusionValue is just to have starting stats that don't mean anything
         CurrentData = self.Scope:Value(Util.GetStatistics({}))
         CurrentTab = self.Scope:Value("ParticlesOnAverage")
@@ -189,6 +192,7 @@ local Optometer = Tool.new {
                     end
                 end
 
+                
                 CurrentData:set(Util.GetStatistics(collectedInstances))
             end
         }
