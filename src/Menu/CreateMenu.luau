@@ -12,7 +12,7 @@ local CurrentTool: Tool.Tool? = nil
 
 local SplashImage: ImageLabel
 
-local SidebarOpened = MenuScope:Value(true)
+local SidebarOpened
 local Arrow: ImageButton
 local MenuFrame: Frame
 
@@ -113,6 +113,8 @@ end
 local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui, activatorButton: PluginToolbarButton)
     Widget = widget
     local Runloop: RBXScriptConnection
+    
+    SidebarOpened = MenuScope:Value(true)
 
     local Children = MenuScope.Children
 
@@ -288,6 +290,8 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui, activator
     sidebarOpenedObserver:onChange(updateMenuSize)
 
     Runloop = RunService.Heartbeat:Connect(function(deltaTime: number)
+        if (not widget.Enabled) then return end
+
         ScrollingFrame.CanvasSize = UDim2.new(0, 0, 0, (#Buttons * Config.Menu.ButtonSize) + (Config.Menu.ToolButtonPadding * (#Buttons + 1)))
         ScrollingPadding.PaddingLeft = UDim.new(
             0, 
@@ -313,10 +317,6 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui, activator
         end
     end)
 
-    widget:BindToClose(function()
-        Runloop:Disconnect()
-    end)
-
     local UpdateLog
     local retries = 0
 
@@ -326,7 +326,11 @@ local function CreateMenu(plugin: Plugin, widget: DockWidgetPluginGui, activator
         end)
 
         if (not success) then
-            warn("Optimize Architect failed to load the Update Log. This could be a problem with your internet connection.")
+            warn("Optimize Architect failed to load the Update Log.")
+            warn("-----------------------")
+            warn("Please ensure that you are running Optimized Architect with internet connection"..
+                " in a published place that has HTTP requests enabled under Game Settings")
+            warn("-----------------------")
             warn("Error code:", errorcode)
         end
     end)

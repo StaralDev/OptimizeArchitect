@@ -30,7 +30,6 @@ function Architect(plugin: Plugin)
     end)
 
     CreateMenu(plugin, widget, activatorButton)
-
 end
 
 return Architect

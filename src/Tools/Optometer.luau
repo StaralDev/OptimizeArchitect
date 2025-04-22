@@ -28,6 +28,7 @@ local OptometerCurrentLabel: TextLabel
 local OptometerOptimizationLabel: TextLabel
 
 local OptometerTopText: TextLabel
+local GeneralDetailFrame: ScrollingFrame
 
 --[=[
     Uses sin() multiplication to calculate how much
@@ -404,7 +405,7 @@ local Optometer = Tool.new {
             Size = UDim2.new(1, 0, 1, -54),
             ClipsDescendants = true,
             BackgroundColor3 = Color3.fromRGB(37, 40, 58),
-
+            
             [self.Scope.Children] = {
                 self.Scope:New "UIPadding" {
                     PaddingBottom = UDim.new(0, 6),
@@ -429,7 +430,7 @@ local Optometer = Tool.new {
             Text = "Miscellaneous"
         }
 
-        local GeneralDetailFrame: ScrollingFrame = self.Scope:New "ScrollingFrame" {
+        GeneralDetailFrame = self.Scope:New "ScrollingFrame" {
             BackgroundTransparency = 1,
             Size = UDim2.new(1, 0, 1, -20 - 54 - 6),
             Position = UDim2.new(0, 0, 0, 20 + 54 + 6),
@@ -438,6 +439,7 @@ local Optometer = Tool.new {
             ScrollBarThickness = Config.Menu.ScrollbarThickness,
             HorizontalScrollBarInset = Enum.ScrollBarInset.ScrollBar,
             VerticalScrollBarPosition = Enum.VerticalScrollBarPosition.Right,
+            ZIndex = 150000,
 
             [self.Scope.Children] = {
                 self.Scope:New "UIListLayout" {
@@ -472,78 +474,80 @@ local Optometer = Tool.new {
                 end
 
                 optometerSafeZone.Visible = (currentConfig.High or currentConfig.Dangerous or currentConfig.Cataclysmic) ~= nil
-            else
-                for _, v in GeneralDetailFrame:GetChildren() do
-                    if (v:IsA("Frame")) then
-                        v:Destroy()
-                    end
+            end
+
+            for _, v in GeneralDetailFrame:GetChildren() do
+                if (v:IsA("Frame")) then
+                    v:Destroy()
                 end
+            end
 
-                local order = 0
-                for i, v: Types.StatisticData in OptometerData do
-                    order += 1
-                    local currentStat = math.clamp(math.round((data[i] or 0) * 100) / 100, 0, 10e8)
-                    local stringifiedStat = if (currentStat or 0 > 10e8) then tostring(currentStat) else "Infinity"
+            local order = 0
+            for i, v: Types.StatisticData in OptometerData do
+                order += 1
+                local currentStat = math.clamp(math.round((data[i] or 0) * 100) / 100, 0, 10e8)
+                local stringifiedStat = if (currentStat or 0 > 10e8) then tostring(currentStat) else "Infinity"
 
-                    local amountTextColor = ChooseFromDialZone(currentStat, v, 
-                        Color3.new(1, 1, 1), 
-                        Color3.new(1, 1, 0), 
-                        Color3.new(1, 0, 0), 
-                        Color3.new(0.65, 0, 0)
-                    )
-                    local nameTextColor = Util.ModifyHSV(amountTextColor, 0, 0, -0.15)
-                    local isCataclysmic = GetDialZone(currentStat, v.High, v.Dangerous, v.Cataclysmic) ~= "Safe"
+                local amountTextColor = ChooseFromDialZone(currentStat, v, 
+                    Color3.new(1, 1, 1), 
+                    Color3.new(1, 1, 0), 
+                    Color3.new(1, 0, 0), 
+                    Color3.new(0.65, 0, 0)
+                )
+                local nameTextColor = Util.ModifyHSV(amountTextColor, 0, 0, -0.15)
+                local isCataclysmic = GetDialZone(currentStat, v.High, v.Dangerous, v.Cataclysmic) ~= "Safe"
 
-                    local strokeStart = if (isCataclysmic) then
-                        `<stroke color="#000000">`
-                    else
-                        ""
+                local strokeStart = if (isCataclysmic) then
+                    `<stroke color="#000000">`
+                else
+                    ""
 
-                    local strokeEnd = if (isCataclysmic) then
-                        `</stroke>`
-                    else
-                        ""
+                local strokeEnd = if (isCataclysmic) then
+                    `</stroke>`
+                else
+                    ""
 
-                    local statFrame: Frame = self.Scope:New "Frame" {
-                        Size = UDim2.new(1, -6, 0, 18),
-                        BackgroundColor3 = ChooseFromDialZone(currentStat, v,
-                            Color3.fromHSV(0.642857, 0.362069, 0.227451),
-                            Color3.fromRGB(87, 79, 94),
-                            Color3.fromRGB(87, 52, 94),
-                            Color3.fromRGB(54, 32, 63)
-                        ),
-                        LayoutOrder = v.ManualOrder or order,
+                local statFrame: Frame = self.Scope:New "Frame" {
+                    Size = UDim2.new(1, -6, 0, 18),
+                    BackgroundColor3 = ChooseFromDialZone(currentStat, v,
+                        Color3.fromHSV(0.642857, 0.362069, 0.227451),
+                        Color3.fromRGB(87, 79, 94),
+                        Color3.fromRGB(87, 52, 94),
+                        Color3.fromRGB(54, 32, 63)
+                    ),
+                    LayoutOrder = v.ManualOrder or order,
+                    ZIndex = 9999990,
 
-                        [self.Scope.Children] = {
+                    [self.Scope.Children] = {
 
-                            self.Scope:New "UICorner" {
-                                CornerRadius = UDim.new(0, 6),
-                            },
+                        self.Scope:New "UICorner" {
+                            CornerRadius = UDim.new(0, 6),
+                        },
 
-                            self.Scope:PresetTextLabel() {
-                                BackgroundTransparency = 1,
-                                TextSize = 14,
-                                RichText = true,
-                                TextXAlignment = Enum.TextXAlignment.Left,
-                                Text = `  {strokeStart}<font color="#{nameTextColor:ToHex()}">{v.ShortName or v.DisplayName or i}:</font> <font color="#{amountTextColor:ToHex()}">{stringifiedStat}</font>{strokeEnd}`,
-                                Size = UDim2.new(1, 0, 1, -2),
-                                Position = UDim2.new(0, 0, 0, 1)
-                            }
+                        self.Scope:PresetTextLabel() {
+                            BackgroundTransparency = 1,
+                            TextSize = 14,
+                            RichText = true,
+                            TextXAlignment = Enum.TextXAlignment.Left,
+                            Text = `  {strokeStart}<font color="#{nameTextColor:ToHex()}">{v.ShortName or v.DisplayName or i}:</font> <font color="#{amountTextColor:ToHex()}">{stringifiedStat}</font>{strokeEnd}`,
+                            Size = UDim2.new(1, 0, 1, -2),
+                            Position = UDim2.new(0, 0, 0, 1),
+                            ZIndex = 9999991,
                         }
                     }
+                }
 
-                    statFrame.Parent = GeneralDetailFrame
-                end
-
-                GeneralDetailFrame.CanvasSize = UDim2.new(0, 0, 0, order * 24)
+                statFrame.Parent = GeneralDetailFrame
             end
+
+            GeneralDetailFrame.CanvasSize = UDim2.new(0, 0, 0, order * 24)
 
             local tabMiscellaneous = (tab == "Miscellaneous")
 
             MeterLayoutFrame.Visible = not tabMiscellaneous
             labelFrame.Visible = not tabMiscellaneous
 
-            GeneralDetailFrame.Visible = tabMiscellaneous
+            GeneralDetailFrame.Visible = tabMiscellaneous or (self.MenuFrame.AbsoluteSize.Y > 400)
             GeneralDetailTopbar.Visible = tabMiscellaneous
         end
 
@@ -616,6 +620,36 @@ local Optometer = Tool.new {
         end
 
         OptometerFrame.Size = UDim2.new(1, 0, 0, MeterLayoutFrame.AbsoluteSize.Y - 38 - 12)
+    
+        pcall(function()
+            if (self.MenuFrame.AbsoluteSize.Y > 400 and not (tab == "Miscellaneous")) then
+
+                local optometerSize = OptometerFrame.AbsoluteSize.Y / 2
+
+                GeneralDetailFrame.Visible = true
+                GeneralDetailFrame.Parent = MeterLayoutFrame
+                GeneralDetailFrame.Position = UDim2.new(0, 0, 0, 46 + optometerSize)
+                GeneralDetailFrame.Size = UDim2.new(1, 0, 1, -OptometerOptimizationLabel.AbsoluteSize.Y - OptometerCurrentLabel.AbsoluteSize.Y - 12 - optometerSize)
+
+                for _, v in GeneralDetailFrame:GetChildren() do
+                    if (v:IsA("Frame")) then
+                        v.BackgroundColor3 = Color3.fromRGB(31, 34, 49)
+                    end
+                end
+            else
+                GeneralDetailFrame.Visible = (tab == "Miscellaneous")
+                GeneralDetailFrame.Size = UDim2.new(1, 0, 1, -20 - 54 - 6)
+                GeneralDetailFrame.Position = UDim2.new(0, 0, 0, 20 + 54 + 6)
+                GeneralDetailFrame.Parent = self.MenuFrame
+
+                for _, v in GeneralDetailFrame:GetChildren() do
+                    if (v:IsA("Frame")) then
+                        v.BackgroundColor3 = Color3.fromRGB(37, 40, 58)
+                    end
+                end
+            end
+        end)
+
     end
 }
 
