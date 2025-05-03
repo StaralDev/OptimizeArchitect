@@ -7,9 +7,8 @@ export type CompileConfig = {
     Context: Enum.RunContext,
     Parent: Instance,
     SequenceLength: number,
+    SequenceSpeed: number,
 }
-
-local ERROR_ILLEGAL_CONTEXT = "Context \"%s\" is not allowed. Please restrict to use of Legacy and Client contexts."
 
 local PREFIX = [[This sequence was compiled using Optimize Architect's EffectSequence tool.]]
 
@@ -35,14 +34,28 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.]]
 
--- You know god is dead when you're writing code in strings
 local INITIATE_SINGLETON = [[local __SequenceSingleton = {
     Time = 0,
     SequenceLength = %s,
+    SequenceSpeed = %s,
     Script = script,
     Parent = script.Parent,
     Garbage = {}
-}]]
+    }]]
+
+local INITIATE_GET_SERVICES = [[local RunService = game:GetService("RunService")]]
+    
+-- You know god is dead when you're writing code in strings
+local AUTO_GET_CONTEXT_SIGNAL = [[local function GetContextSignal(): RBXScriptSignal
+    return if (RunService:IsServer()) then 
+        RunService.Heartbeat
+    else
+        RunService.RenderStepped
+end]]
+
+local AUTO_UPDATE = [[GetContextSignal():Connect(function(deltaTime)
+__SequenceSingleton.Time += deltaTime * __SequenceSingleton.SequenceSpeed
+end)]]
 
 --[=[
     Adds a line to a string
@@ -121,7 +134,11 @@ function Container.Compile(CompileConfig: CompileConfig)
     Source = AddLine(Source, MIT_LICENSE)
     Source = AddBlank(Source, 2)
 
-    Source = AddLine(Source, string.format(INITIATE_SINGLETON, CompileConfig.SequenceLength))
+    Source = AddLine(Source, INITIATE_GET_SERVICES)
+    Source = AddBlank(Source, 1)
+    Source = AddLine(Source, AUTO_GET_CONTEXT_SIGNAL)
+    Source = AddBlank(Source, 1)
+    Source = AddLine(Source, string.format(INITIATE_SINGLETON, CompileConfig.SequenceLength, CompileConfig.SequenceSpeed))
     Source = AddBlank(Source, 1)
 
     --[[
@@ -144,5 +161,11 @@ function Container.Compile(CompileConfig: CompileConfig)
         Source = AddLine(Source, nextLine)
     end
 
+    Source = AddBlank(Source, 1)
+
+    --[[
+        Update functionality
+    ]]
+    Source = AddLine(Source, AUTO_UPDATE)
     SourceScript.Source = Source
 end
