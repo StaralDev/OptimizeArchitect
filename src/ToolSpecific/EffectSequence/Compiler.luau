@@ -35,14 +35,14 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.]]
 
+-- You know god is dead when you're writing code in strings
 local INITIATE_SINGLETON = [[local __SequenceSingleton = {
     Time = 0,
     SequenceLength = %s,
     Script = script,
     Parent = script.Parent,
     Garbage = {}
-}
-]]
+}]]
 
 --[=[
     Adds a line to a string
@@ -113,6 +113,9 @@ function Container.Compile(CompileConfig: CompileConfig)
     Dependencies.Parent = SourceScript
     Dependencies.Name = "Dependencies"
 
+    --[[
+        Prefix, license and starting variables
+    ]]
     local Source = PREFIX
     Source = AddBlank(Source, 2)
     Source = AddLine(Source, MIT_LICENSE)
@@ -121,6 +124,10 @@ function Container.Compile(CompileConfig: CompileConfig)
     Source = AddLine(Source, string.format(INITIATE_SINGLETON, CompileConfig.SequenceLength))
     Source = AddBlank(Source, 1)
 
+    --[[
+        Most of the functionality of each script runs once and is eventually
+        garbage collected.
+    ]]
     local dependancyModules = FindDependancyModules(CompileConfig)
     for _, v in dependancyModules do
         local dependancyCopy = v:Clone()
@@ -133,7 +140,7 @@ function Container.Compile(CompileConfig: CompileConfig)
     Source = AddBlank(Source, 1)
 
     for _, v in CompileConfig.FunctionFrames do
-        local nextLine = `table.insert(__SequenceSingleton, {UnpackArrayInString(v.Extension)})`
+        local nextLine = `table.insert(__SequenceSingleton.Garbage, {v.Name}.Meta(__SequenceSingleton, {UnpackArrayInString(v.Extension)}))`
         Source = AddLine(Source, nextLine)
     end
 
