@@ -10,9 +10,11 @@ export type CompileConfig = {
     SequenceSpeed: number,
 }
 
-local PREFIX = [[This sequence was compiled using Optimize Architect's EffectSequence tool.]]
+local PREFIX = [[-- This sequence was compiled using Optimize Architect's EffectSequence tool.
+-- If you find any issues, bugs, or errors, please file a report at 'https://github.com/StaralDev/OptimizeArchitect/issues'
+]]
 
-local MIT_LICENSE = [[MIT License
+local MIT_LICENSE = [=[--[[MIT License
 
 Copyright (c) 2025 StaralDev
 
@@ -32,7 +34,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.]]
+SOFTWARE.]]]=]
 
 local INITIATE_SINGLETON = [[local __SequenceSingleton = {
     Time = 0,
@@ -122,6 +124,9 @@ function Container.Compile(CompileConfig: CompileConfig)
     SourceScript.RunContext = CompileConfig.Context
     SourceScript.Parent = CompileConfig.Parent
 
+    local EventModule = script.Parent.Event:Clone()
+    EventModule.Parent = SourceScript
+
     local Dependencies = Instance.new("Folder")
     Dependencies.Parent = SourceScript
     Dependencies.Name = "Dependencies"
@@ -157,7 +162,7 @@ function Container.Compile(CompileConfig: CompileConfig)
     Source = AddBlank(Source, 1)
 
     for _, v in CompileConfig.FunctionFrames do
-        local nextLine = `table.insert(__SequenceSingleton.Garbage, {v.Name}.Meta(__SequenceSingleton, {UnpackArrayInString(v.Extension)}))`
+        local nextLine = `{v.Name}:Meta(__SequenceSingleton, {UnpackArrayInString(v.Extension)})`
         Source = AddLine(Source, nextLine)
     end
 
