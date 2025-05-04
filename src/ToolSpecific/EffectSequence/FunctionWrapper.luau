@@ -21,7 +21,7 @@ local function Extend(self: FunctionWrapper, extension: { [number]: any }): Func
     local frame: FunctionFrame = {
         Name = self.Name,
         Extension = extension,
-        Dependancies = self.Dependancies
+        Dependencies = self.Dependencies
     }
 
     return frame
@@ -30,7 +30,7 @@ end
 export type FunctionFrame = {
     Name: string,
     Extension: { [number]: any },
-    Dependancies: { ModuleScript }?
+    Dependencies: { ModuleScript }?
 }
 
 type Argument = Event.Argument
@@ -38,7 +38,7 @@ type Argument = Event.Argument
 type FunctionWrapperProperties = {
     Name: string,
     DisplayName: string,
-    Dependancies: { ModuleScript }?,
+    Dependencies: { ModuleScript }?,
     Arguments: { Argument },
 }
 
@@ -60,26 +60,26 @@ function Container.Add(properties: FunctionWrapperProperties)
     local wrapper: FunctionWrapper = {
         Name = properties.Name,
         DisplayName = properties.DisplayName,
-        Dependancies = properties.Dependancies,
+        Dependencies = properties.Dependencies,
         Arguments = properties.Arguments,
         Extend = Extend
     }
 
-    Container[wrapper.Name] = wrapper
+    Container.Wrappers[wrapper.Name] = wrapper
 end
 
 --[=[
     Loads all of the data from the Events into the Module.Wrappers map.
 ]=]
 function Container.GenerateEvents()
-    for _, v in script.Parent.Dependancies:GetChildren() do
+    for _, v in script.Parent.Dependencies:GetChildren() do
         if not (v:IsA("ModuleScript")) then continue end
         local valueEvent: Event.Event = require(v)
 
         Container.Add {
             Name = v.Name,
             DisplayName = valueEvent.DisplayName,
-            Dependancies = valueEvent.Dependencies,
+            Dependencies = valueEvent.Dependencies,
             Arguments = valueEvent.Arguments
         }
     end

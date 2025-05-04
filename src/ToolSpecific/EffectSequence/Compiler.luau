@@ -10,11 +10,11 @@ export type CompileConfig = {
     SequenceSpeed: number,
 }
 
-local PREFIX = [[-- This sequence was compiled using Optimize Architect's EffectSequence tool.
--- If you find any issues, bugs, or errors, please file a report at 'https://github.com/StaralDev/OptimizeArchitect/issues'
-]]
+local PREFIX = [[--!strict
+-- This sequence was compiled using Optimize Architect's EffectSequence tool.
+-- If you find any issues, bugs, or errors, please file a report at 'https://github.com/StaralDev/OptimizeArchitect/issues']]
 
-local MIT_LICENSE = [=[--[[MIT License
+local MIT_LICENSE = [=[--[[ MIT License
 
 Copyright (c) 2025 StaralDev
 
@@ -34,7 +34,8 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.]]]=]
+SOFTWARE.
+]]]=]
 
 local INITIATE_SINGLETON = [[local __SequenceSingleton = {
     Time = 0,
@@ -43,7 +44,7 @@ local INITIATE_SINGLETON = [[local __SequenceSingleton = {
     Script = script,
     Parent = script.Parent,
     Garbage = {}
-    }]]
+}]]
 
 local INITIATE_GET_SERVICES = [[local RunService = game:GetService("RunService")]]
     
@@ -56,7 +57,7 @@ local AUTO_GET_CONTEXT_SIGNAL = [[local function GetContextSignal(): RBXScriptSi
 end]]
 
 local AUTO_UPDATE = [[GetContextSignal():Connect(function(deltaTime)
-__SequenceSingleton.Time += deltaTime * __SequenceSingleton.SequenceSpeed
+    __SequenceSingleton.Time += deltaTime * __SequenceSingleton.SequenceSpeed
 end)]]
 
 --[=[
@@ -68,7 +69,8 @@ end)]]
     @return The string with a new line
 ]=]
 local function AddLine(str: string, content: string?): string
-    return str.."\n"..(content or "")
+    local changed = str.."\n"..(content or "")
+    return changed
 end
 
 --[=[
@@ -80,10 +82,11 @@ end
     @return The string with new blank lines
 ]=]
 local function AddBlank(str: string, number: number): string
+    local changed = str
     for i = 1, number do
-        str = AddLine(str)
+        changed = AddLine(changed)
     end
-    return str
+    return changed
 end
 
 --[=[
@@ -97,8 +100,10 @@ local function FindDependancyModules(CompileConfig: CompileConfig): { ModuleScri
     local foundModules: { ModuleScript } = {}
     
     for _, v in CompileConfig.FunctionFrames do
-        if (table.find(foundModules, v)) then continue end
-        table.insert(foundModules, v)
+        for _, dependency in (v.Dependencies) do
+            if (table.find(foundModules, dependency)) then continue end
+            table.insert(foundModules, dependency)
+        end
     end
 
     return foundModules
@@ -137,7 +142,9 @@ function Container.Compile(CompileConfig: CompileConfig)
     local Source = PREFIX
     Source = AddBlank(Source, 2)
     Source = AddLine(Source, MIT_LICENSE)
+    print(Source)
     Source = AddBlank(Source, 2)
+    print(Source)
 
     Source = AddLine(Source, INITIATE_GET_SERVICES)
     Source = AddBlank(Source, 1)
@@ -155,8 +162,8 @@ function Container.Compile(CompileConfig: CompileConfig)
         local dependancyCopy = v:Clone()
         dependancyCopy.Parent = Dependencies
 
-        local nextLine = `local {v.Name} = require(script["Dependencies"]:FindFirstChild({v.Name}))`
-        Source = AddLine(nextLine)
+        local nextLine = `local {v.Name} = require(script["Dependencies"]:FindFirstChild("{v.Name}"))`
+        Source = AddLine(Source, nextLine)
     end
 
     Source = AddBlank(Source, 1)
@@ -173,4 +180,8 @@ function Container.Compile(CompileConfig: CompileConfig)
     ]]
     Source = AddLine(Source, AUTO_UPDATE)
     SourceScript.Source = Source
+
+    return SourceScript
 end
+
+return Container

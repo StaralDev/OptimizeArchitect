@@ -1,6 +1,6 @@
 local Event = require(script.Parent.Parent.Event)
 
-Event.Create({
+return Event.Create({
     DisplayName = "Test Event",
     Dependencies = { script },
     Arguments = {
