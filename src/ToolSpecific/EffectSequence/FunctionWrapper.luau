@@ -1,4 +1,6 @@
 local Event = require(script.Parent.Event)
+local Switch = require(script.Parent.Parent.Parent.UtilModules.Switch)
+local HttpService = game:GetService("HttpService")
 
 local Container = {}
 Container.Wrappers = {} :: { [string]: FunctionWrapper }
@@ -18,11 +20,54 @@ local ERROR_ARGUMENT_COUNT_INVALID = "Function frame \"%s\" has %s arguments pro
 local function Extend(self: FunctionWrapper, extension: { [number]: any }): FunctionFrame
     assert(#extension == #self.Arguments, string.format(ERROR_ARGUMENT_COUNT_INVALID, self.Name, #extension or 0, #self.Arguments))
 
+    local serializedExtension = {}
+    
     local frame: FunctionFrame = {
         Name = self.Name,
-        Extension = extension,
-        Dependencies = self.Dependencies
+        Extension = serializedExtension,
+        Dependencies = self.Dependencies,
+        DataReferenceCache = {},
     }
+    
+    for i, v in extension do
+        local dataType = typeof(v)
+        
+        Switch.Evaluate(dataType)
+        :Case("string", function()
+            serializedExtension[i] = `"{v}"`
+        end)
+        :Case("boolean")
+        :Case("number", function()
+            local stringified = tostring(v)
+            serializedExtension[i] = stringified
+        end)
+        :Case("Color3", function()
+            serializedExtension[i] = `Color3.fromHex({v:ToHex()})`
+        end)
+        :Case("NumberRange", function()
+            serializedExtension[i] = `NumberRange.new({tostring(v.Min)}, {tostring(v.Max)})`
+        end)
+        :Case("Vector3")
+        :Case("Vector2", function()
+            serializedExtension[i] = `{dataType}.new({tostring(v)})`
+        end)
+        :Case("EnumItem", function()
+            serializedExtension[i] = `Enum.{tostring(v.EnumType)}.{v.Name}`
+        end)
+        :Case("Instance")
+        :Case("CFrame", function()
+            local uuid = HttpService:GenerateGUID()
+            frame.DataReferenceCache[uuid] = v
+            serializedExtension[i] = `script.References[{uuid}].Value`
+        end)
+        :Case("ColorSequence")
+        :Case("NumberSequence", function()
+            local uuid = HttpService:GenerateGUID()
+            frame.DataReferenceCache[uuid] = v
+            serializedExtension[i] = `script.References[{uuid}]:GetAttribute("Value")`
+        end)
+        :End()
+    end
 
     return frame
 end
@@ -30,7 +75,8 @@ end
 export type FunctionFrame = {
     Name: string,
     Extension: { [number]: any },
-    Dependencies: { ModuleScript }?
+    Dependencies: { ModuleScript }?,
+    DataReferenceCache: { [string]: any },
 }
 
 type Argument = Event.Argument

@@ -43,14 +43,16 @@ local INITIATE_SINGLETON = [[local __SequenceSingleton = {
     SequenceSpeed = %s,
     Script = script,
     Parent = script.Parent,
-    Garbage = {}
+    IsServer = IS_SERVER,
+    Events = {},
 }]]
 
-local INITIATE_GET_SERVICES = [[local RunService = game:GetService("RunService")]]
+local INITIATE_GET_SERVICES = [[local RunService = game:GetService("RunService")
+local IS_SERVER = RunService:IsServer()]]
     
 -- You know god is dead when you're writing code in strings
 local AUTO_GET_CONTEXT_SIGNAL = [[local function GetContextSignal(): RBXScriptSignal
-    return if (RunService:IsServer()) then 
+    return if (IS_SERVER) then 
         RunService.Heartbeat
     else
         RunService.RenderStepped
@@ -169,7 +171,7 @@ function Container.Compile(CompileConfig: CompileConfig)
     Source = AddBlank(Source, 1)
 
     for _, v in CompileConfig.FunctionFrames do
-        local nextLine = `{v.Name}:Meta(__SequenceSingleton, {UnpackArrayInString(v.Extension)})`
+        local nextLine = `{v.Name}:Fire(__SequenceSingleton, {UnpackArrayInString(v.Extension)})`
         Source = AddLine(Source, nextLine)
     end
 

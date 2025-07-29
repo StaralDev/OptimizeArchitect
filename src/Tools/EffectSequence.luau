@@ -26,7 +26,7 @@ local EffectSequence = Tool.new {
                 print(FunctionWrapper.Wrappers)
 
                 local TestFrames = {
-                    FunctionWrapper.Wrappers["TestEvent"]:Extend({"\"Bluh\""})
+                    FunctionWrapper.Wrappers["ColorEvent"]:Extend({"\"Bluh\""})
                 }
                 
                 local compiledScript = Compiler.Compile({
